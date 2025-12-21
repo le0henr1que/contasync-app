@@ -1,65 +1,129 @@
-import Image from "next/image";
+import { Hero } from '@/components/landing/Hero';
+import { HowItWorks } from '@/components/landing/HowItWorks';
+import { Benefits } from '@/components/landing/Benefits';
+import { PricingPreview } from '@/components/landing/PricingPreview';
+import { Testimonials } from '@/components/landing/Testimonials';
+import { FAQ } from '@/components/landing/FAQ';
+import { Footer } from '@/components/landing/Footer';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
-export default function Home() {
+export const metadata = {
+  title: 'ContaSync - Gestão Financeira para Contadores e Escritórios',
+  description:
+    'Plataforma completa para contadores gerenciarem clientes, documentos, pagamentos e despesas. Trial gratuito de 14 dias.',
+  openGraph: {
+    title: 'ContaSync - Gestão Financeira para Contadores',
+    description: 'Centralize seus clientes em um só lugar. Trial gratuito de 14 dias.',
+    url: 'https://contasync.com',
+    siteName: 'ContaSync',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ContaSync - Gestão Financeira',
+    description: 'Trial gratuito de 14 dias',
+  },
+};
+
+export default function LandingPage() {
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'ContaSync',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'Offer',
+      price: '29.90',
+      priceCurrency: 'BRL',
+      priceValidUntil: '2025-12-31',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '127',
+    },
+    description:
+      'Plataforma completa para contadores gerenciarem clientes, documentos, pagamentos e despesas. Trial gratuito de 14 dias.',
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      {/* Header/Navbar */}
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 flex h-16 items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg
+              className="h-8 w-8 text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="text-xl font-bold">ContaSync</span>
+          </div>
+          <nav className="hidden md:flex items-center gap-6">
+            <Link href="#como-funciona" className="text-sm hover:text-primary">
+              Como Funciona
+            </Link>
+            <Link href="/pricing" className="text-sm hover:text-primary">
+              Preços
+            </Link>
+            <Link href="#faq" className="text-sm hover:text-primary">
+              FAQ
+            </Link>
+          </nav>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" asChild>
+              <Link href="/login">Entrar</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/signup">Começar Grátis</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Sections */}
+      <Hero />
+      <div id="como-funciona">
+        <HowItWorks />
+      </div>
+      <Benefits />
+      <PricingPreview />
+      <Testimonials />
+      <div id="faq">
+        <FAQ />
+      </div>
+
+      {/* Final CTA */}
+      <section className="py-20 bg-primary text-primary-foreground">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Pronto para começar?
+          </h2>
+          <p className="text-xl mb-8 opacity-90">
+            Comece seu trial gratuito de 14 dias agora. Sem cartão de crédito.
           </p>
+          <Button size="lg" variant="secondary" asChild className="text-lg px-8">
+            <Link href="/signup">Começar Trial Gratuito</Link>
+          </Button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
+
+      <Footer />
     </div>
   );
 }
