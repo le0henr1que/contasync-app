@@ -856,6 +856,7 @@ export default function ClientDetailPage() {
             phone: client.phone,
             companyName: client.companyName,
             expenseModuleEnabled: client.expenseModuleEnabled,
+            isActive: client.user.isActive,
           }}
         />
 
