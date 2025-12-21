@@ -136,7 +136,7 @@ export function RecordPaymentModal({
   const fetchClients = async () => {
     try {
       setIsLoadingClients(true);
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -165,7 +165,7 @@ export function RecordPaymentModal({
     try {
       setIsLoadingDocuments(true);
       const response = await fetch(
-        `http://localhost:3000/api/documents/client/${selectedClientId}/grouped`,
+        `${process.env.NEXT_PUBLIC_API_URL}/documents/client/${selectedClientId}/grouped`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -297,8 +297,8 @@ export function RecordPaymentModal({
       }
 
       const url = isEditMode
-        ? `http://localhost:3000/api/payments/${payment!.id}`
-        : 'http://localhost:3000/api/payments';
+        ? `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment!.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/payments`;
 
       const method = isEditMode ? 'PATCH' : 'POST';
 
@@ -325,7 +325,7 @@ export function RecordPaymentModal({
       if (!isEditMode && selectedDocumentId && createdPayment.id) {
         try {
           const attachResponse = await fetch(
-            `http://localhost:3000/api/payments/${createdPayment.id}/attach-document`,
+            `${process.env.NEXT_PUBLIC_API_URL}/payments/${createdPayment.id}/attach-document`,
             {
               method: 'POST',
               headers: {

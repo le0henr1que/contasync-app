@@ -303,7 +303,7 @@ export function AccountantPaymentsTable({
                                     className="h-7 w-7 p-0"
                                     onClick={() => {
                                       // Open document in new tab
-                                      window.open(`http://localhost:3000/api/documents/${attachment.document.id}/download`, '_blank');
+                                      window.open(`${process.env.NEXT_PUBLIC_API_URL}/documents/${attachment.document.id}/download`, '_blank');
                                     }}
                                     title="Baixar documento"
                                   >

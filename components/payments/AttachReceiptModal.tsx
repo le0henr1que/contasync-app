@@ -95,7 +95,7 @@ export function AttachReceiptModal({
       formData.append('file', selectedFile);
 
       const response = await fetch(
-        `http://localhost:3000/api/payments/${payment.id}/receipt`,
+        `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/receipt`,
         {
           method: 'PATCH',
           headers: {

@@ -55,12 +55,12 @@ export default function ClientPortalPage() {
     try {
       setIsLoading(true);
       const [profileRes, statsRes] = await Promise.all([
-        fetch('http://localhost:3000/api/clients/me', {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
         }),
-        fetch('http://localhost:3000/api/clients/me/statistics', {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/statistics`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },

@@ -76,7 +76,7 @@ export function AttachDocumentModal({
     try {
       setIsLoading(true);
       const response = await fetch(
-        `http://localhost:3000/api/documents/client/${payment.clientId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/documents/client/${payment.clientId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -104,7 +104,7 @@ export function AttachDocumentModal({
     try {
       setIsAttaching(true);
       const response = await fetch(
-        `http://localhost:3000/api/payments/${payment.id}/attach-document`,
+        `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/attach-document`,
         {
           method: 'POST',
           headers: {
@@ -138,7 +138,7 @@ export function AttachDocumentModal({
     try {
       setIsDetaching(true);
       const response = await fetch(
-        `http://localhost:3000/api/payments/${payment.id}/detach-document/${documentId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/detach-document/${documentId}`,
         {
           method: 'DELETE',
           headers: {

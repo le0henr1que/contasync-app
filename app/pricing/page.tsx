@@ -40,7 +40,7 @@ export default function PricingPage() {
 
       // Try to fetch from API
       const response = await fetch(
-        `http://localhost:3000/api/plans?tenantType=${tenantType}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/plans?tenantType=${tenantType}`,
         {
           method: 'GET',
           headers: {

@@ -33,7 +33,7 @@ export function CurrentPlanCard() {
   const fetchCurrentPlan = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/subscriptions/me', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -75,7 +75,7 @@ export function CurrentPlanCard() {
     setIsManaging(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/subscriptions/portal', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/portal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

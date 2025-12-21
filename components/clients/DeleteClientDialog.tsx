@@ -35,7 +35,7 @@ export function DeleteClientDialog({
     try {
       setIsDeleting(true);
 
-      const response = await fetch(`http://localhost:3000/api/clients/${clientId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

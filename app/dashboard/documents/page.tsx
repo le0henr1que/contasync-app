@@ -116,8 +116,8 @@ export default function DocumentsPage() {
 
       // Use different endpoint for client vs accountant
       const endpoint = isClient
-        ? `http://localhost:3000/api/documents/me?${params}`
-        : `http://localhost:3000/api/documents?${params}`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/documents/me?${params}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/documents?${params}`;
 
       const response = await fetch(endpoint, {
         headers: {
@@ -165,7 +165,7 @@ export default function DocumentsPage() {
     try {
       setIsDeleting(true);
 
-      const response = await fetch(`http://localhost:3000/api/documents/${documentToDelete.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${documentToDelete.id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

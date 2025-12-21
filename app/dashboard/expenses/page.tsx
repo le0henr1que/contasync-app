@@ -142,7 +142,7 @@ export default function AccountantExpensesPage() {
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
         headers: {
           Authorization: 'Bearer ' + token,
         },
@@ -172,7 +172,7 @@ export default function AccountantExpensesPage() {
       if (categoryFilter && categoryFilter !== 'ALL') params.append('category', categoryFilter);
 
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/expenses?' + params, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses?${params}`, {
         headers: {
           Authorization: 'Bearer ' + token,
         },
@@ -222,7 +222,7 @@ export default function AccountantExpensesPage() {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/expenses/' + expense.id + '/receipt', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses/${expense.id}/receipt`, {
         headers: {
           Authorization: 'Bearer ' + token,
         },
@@ -261,7 +261,7 @@ export default function AccountantExpensesPage() {
 
       const token = localStorage.getItem('accessToken');
       const response = await fetch(
-        `http://localhost:3000/api/expenses/export/${format}?${params}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/expenses/export/${format}?${params}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

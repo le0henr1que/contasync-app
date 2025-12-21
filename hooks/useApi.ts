@@ -4,7 +4,7 @@ import useSWR, { SWRConfiguration } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { fetcher, fetcherWithBody } from '@/lib/fetcher';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
 /**
  * Hook customizado para requisições GET com cache

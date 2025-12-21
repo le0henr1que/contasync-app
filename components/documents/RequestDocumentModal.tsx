@@ -101,7 +101,7 @@ export function RequestDocumentModal({
     try {
       setIsSubmitting(true);
 
-      const response = await fetch('http://localhost:3000/api/documents/request', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/request`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

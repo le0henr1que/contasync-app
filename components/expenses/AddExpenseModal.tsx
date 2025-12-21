@@ -142,7 +142,7 @@ export function AddExpenseModal({ isOpen, onClose, onSuccess }: AddExpenseModalP
       }
 
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/expenses/me', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses/me`, {
         method: 'POST',
         headers: {
           Authorization: 'Bearer ' + token,

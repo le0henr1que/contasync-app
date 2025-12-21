@@ -98,7 +98,7 @@ export default function ClientsPage() {
   const fetchClients = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -136,7 +136,7 @@ export default function ClientsPage() {
   // Fetch invitations from API
   const fetchInvitations = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/invitations', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -154,7 +154,7 @@ export default function ClientsPage() {
   const handleResendInvitation = async (invitationId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/invitations/${invitationId}/resend`,
+        `${process.env.NEXT_PUBLIC_API_URL}/invitations/${invitationId}/resend`,
         {
           method: 'POST',
           headers: {

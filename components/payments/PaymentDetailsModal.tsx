@@ -327,7 +327,7 @@ export function PaymentDetailsModal({
                         className="flex-shrink-0"
                         onClick={() => {
                           window.open(
-                            `http://localhost:3000/api/documents/${attachment.document.id}/download`,
+                            `${process.env.NEXT_PUBLIC_API_URL}/documents/${attachment.document.id}/download`,
                             '_blank'
                           );
                         }}

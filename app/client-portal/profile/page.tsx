@@ -49,7 +49,7 @@ export default function ClientProfilePage() {
   const fetchProfile = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3000/api/clients/me', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -106,7 +106,7 @@ export default function ClientProfilePage() {
 
     try {
       setIsSaving(true);
-      const response = await fetch('http://localhost:3000/api/clients/me/profile', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/profile`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

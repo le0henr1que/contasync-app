@@ -60,7 +60,7 @@ export function OnboardingChecklist() {
   const fetchProgress = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/users/me/onboarding-progress', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me/onboarding-progress`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

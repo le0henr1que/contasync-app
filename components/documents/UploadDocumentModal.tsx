@@ -73,7 +73,7 @@ export function UploadDocumentModal({ isOpen, onClose, onSuccess }: UploadDocume
   const fetchClients = async () => {
     try {
       setIsLoadingClients(true);
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -212,7 +212,7 @@ export function UploadDocumentModal({ isOpen, onClose, onSuccess }: UploadDocume
         setIsUploading(false);
       });
 
-      xhr.open('POST', 'http://localhost:3000/api/documents');
+      xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL}/documents`);
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('accessToken')}`);
       xhr.send(formData);
     } catch (error: any) {

@@ -147,7 +147,7 @@ export default function ClientPaymentsPage() {
         params.append('period', periodFilter);
       }
 
-      const response = await fetch(`http://localhost:3000/api/payments/me?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/me?${params}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },

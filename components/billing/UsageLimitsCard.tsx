@@ -39,7 +39,7 @@ export function UsageLimitsCard() {
   const fetchUsage = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/subscriptions/me/usage', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/me/usage`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

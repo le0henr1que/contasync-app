@@ -73,7 +73,7 @@ export default function NotificationsPage() {
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3000/api/notifications/me', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/me`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -94,7 +94,7 @@ export default function NotificationsPage() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/read`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -116,7 +116,7 @@ export default function NotificationsPage() {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/mark-all-read', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

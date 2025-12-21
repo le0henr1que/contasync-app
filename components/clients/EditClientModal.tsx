@@ -138,7 +138,7 @@ export function EditClientModal({
         phone: data.phone?.replace(/\D/g, ''),
       };
 
-      const response = await fetch(`http://localhost:3000/api/clients/${clientId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

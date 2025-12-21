@@ -56,10 +56,10 @@ export function ChangePlanSection() {
       const token = localStorage.getItem('accessToken');
 
       const [plansRes, subRes] = await Promise.all([
-        fetch('http://localhost:3000/api/plans', {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/plans`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:3000/api/subscriptions/me', {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/me`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -137,7 +137,7 @@ export function ChangePlanSection() {
           return;
         }
 
-        const response = await fetch('http://localhost:3000/api/subscriptions/checkout', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/checkout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -166,8 +166,8 @@ export function ChangePlanSection() {
       const isUpgrade = selectedPlan.price > plans.find(p => p.id === currentSub.planId)?.price!;
 
       const endpoint = isUpgrade
-        ? 'http://localhost:3000/api/subscriptions/upgrade'
-        : 'http://localhost:3000/api/subscriptions/downgrade';
+        ? `${process.env.NEXT_PUBLIC_API_URL}/subscriptions/upgrade`
+        : `${process.env.NEXT_PUBLIC_API_URL}/subscriptions/downgrade`;
 
       const response = await fetch(endpoint, {
         method: 'POST',

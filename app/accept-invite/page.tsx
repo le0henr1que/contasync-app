@@ -49,7 +49,7 @@ function AcceptInviteContent() {
   const validateInvitation = async () => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/invitations/validate?token=${token}`
+        `${process.env.NEXT_PUBLIC_API_URL}/invitations/validate?token=${token}`
       );
 
       if (!response.ok) {
@@ -82,7 +82,7 @@ function AcceptInviteContent() {
     setIsAccepting(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/invitations/accept', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

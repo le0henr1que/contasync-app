@@ -35,7 +35,7 @@ export function AccountantPlanWidget() {
         throw new Error('Token não encontrado');
       }
 
-      const response = await fetch('http://localhost:3000/api/clients/me/accountant-plan', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/accountant-plan`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

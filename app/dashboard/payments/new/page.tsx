@@ -54,7 +54,7 @@ function NewPaymentForm() {
   const fetchClients = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -106,7 +106,7 @@ function NewPaymentForm() {
       if (reference) payload.reference = reference;
       if (notes) payload.notes = notes;
 
-      const response = await fetch('http://localhost:3000/api/payments', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

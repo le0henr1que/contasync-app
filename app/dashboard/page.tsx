@@ -93,7 +93,7 @@ export default function DashboardPage() {
 
   const fetchPaymentStatistics = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/payments/statistics', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/statistics`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -112,7 +112,7 @@ export default function DashboardPage() {
 
   const fetchClientStatistics = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/clients/me/statistics', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/statistics`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -132,7 +132,7 @@ export default function DashboardPage() {
   const fetchDocumentRequests = useCallback(async () => {
     try {
       setIsLoadingRequests(true);
-      const response = await fetch('http://localhost:3000/api/document-requests', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/document-requests`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },

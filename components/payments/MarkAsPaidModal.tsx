@@ -51,7 +51,7 @@ export function MarkAsPaidModal({
       setIsSubmitting(true);
 
       const response = await fetch(
-        `http://localhost:3000/api/payments/${payment.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}`,
         {
           method: 'PATCH',
           headers: {

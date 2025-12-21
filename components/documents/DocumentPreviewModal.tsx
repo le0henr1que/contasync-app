@@ -99,7 +99,7 @@ export function DocumentPreviewModal({
     try {
       setIsLoading(true);
 
-      const response = await fetch(`http://localhost:3000/api/documents/${documentId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${documentId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -113,7 +113,7 @@ export function DocumentPreviewModal({
       setDocument(data);
 
       // Fetch file for preview
-      const fileResponse = await fetch(`http://localhost:3000/api/documents/${documentId}/download`, {
+      const fileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${documentId}/download`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -138,7 +138,7 @@ export function DocumentPreviewModal({
     try {
       setIsDownloading(true);
 
-      const response = await fetch(`http://localhost:3000/api/documents/${documentId}/download`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${documentId}/download`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -172,7 +172,7 @@ export function DocumentPreviewModal({
     try {
       setIsDeleting(true);
 
-      const response = await fetch(`http://localhost:3000/api/documents/${documentId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

@@ -49,7 +49,7 @@ export function LimitsProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const res = await fetch('http://localhost:3000/api/subscriptions/me/usage', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subscriptions/me/usage`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

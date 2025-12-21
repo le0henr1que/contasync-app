@@ -49,7 +49,7 @@ export function NotificationCenter() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/me', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/me`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -66,7 +66,7 @@ export function NotificationCenter() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/unread-count', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/unread-count`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -85,7 +85,7 @@ export function NotificationCenter() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/notifications/${notificationId}/read`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/read`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -106,7 +106,7 @@ export function NotificationCenter() {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/notifications/mark-all-read', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/mark-all-read`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

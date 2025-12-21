@@ -144,7 +144,7 @@ export default function ClientDetailPage() {
   const fetchClient = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3000/api/clients/${clientId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -169,7 +169,7 @@ export default function ClientDetailPage() {
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      const response = await fetch(`http://localhost:3000/api/clients/${clientId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -317,7 +317,7 @@ export default function ClientDetailPage() {
         setIsUploadingDoc(false);
       });
 
-      xhr.open('POST', 'http://localhost:3000/api/documents');
+      xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL}/documents`);
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('accessToken')}`);
       xhr.send(formData);
     } catch (error: any) {

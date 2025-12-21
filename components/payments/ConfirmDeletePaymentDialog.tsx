@@ -46,7 +46,7 @@ export function ConfirmDeletePaymentDialog({
     try {
       setIsDeleting(true);
 
-      const response = await fetch(`http://localhost:3000/api/payments/${payment.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

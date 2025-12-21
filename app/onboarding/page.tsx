@@ -65,7 +65,7 @@ export default function OnboardingPage() {
     setIsCompleting(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/auth/complete-onboarding', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/complete-onboarding`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

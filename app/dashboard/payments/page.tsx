@@ -126,7 +126,7 @@ export default function PaymentsPage() {
 
     const fetchClients = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/clients', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },
@@ -186,8 +186,8 @@ export default function PaymentsPage() {
 
       // Use different endpoint for client vs accountant
       const endpoint = isClient
-        ? `http://localhost:3000/api/payments/me?${params}`
-        : `http://localhost:3000/api/payments?${params}`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/payments/me?${params}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/payments?${params}`;
 
       const response = await fetch(endpoint, {
         headers: {

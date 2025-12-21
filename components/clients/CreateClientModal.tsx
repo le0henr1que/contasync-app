@@ -109,7 +109,7 @@ export function CreateClientModal({ isOpen, onClose, onSuccess }: CreateClientMo
         phone: data.phone?.replace(/\D/g, ''),
       };
 
-      const response = await fetch('http://localhost:3000/api/clients', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

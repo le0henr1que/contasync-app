@@ -135,7 +135,7 @@ export default function ClientExpensesPage() {
       if (startDate) params.append('startDate', startDate.toISOString().split('T')[0]);
       if (endDate) params.append('endDate', endDate.toISOString().split('T')[0]);
 
-      const response = await fetch(`http://localhost:3000/api/expenses/me?${params}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses/me?${params}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -207,7 +207,7 @@ export default function ClientExpensesPage() {
 
       const token = localStorage.getItem('accessToken');
       const response = await fetch(
-        `http://localhost:3000/api/expenses/export/${format}/me?${params}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/expenses/export/${format}/me?${params}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -65,8 +65,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
       // Se tem clientId, é a contadora vendo documentos do cliente
       // Senão, é o cliente vendo seus próprios documentos
       const endpoint = clientId
-        ? `http://localhost:3000/api/documents/client/${clientId}/grouped`
-        : `http://localhost:3000/api/documents/me/grouped`
+        ? `${process.env.NEXT_PUBLIC_API_URL}/documents/client/${clientId}/grouped`
+        : `${process.env.NEXT_PUBLIC_API_URL}/documents/me/grouped`
 
       const response = await fetch(endpoint, {
         headers: {
@@ -91,7 +91,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
     if (!newFolderName.trim()) return
 
     try {
-      const response = await fetch('http://localhost:3000/api/document-folders', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/document-folders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +123,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/document-folders/${folderId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/document-folders/${folderId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -146,7 +146,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
 
   const deleteDocument = async (documentId: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/documents/${documentId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/${documentId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -172,8 +172,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
   const downloadDocument = async (doc: Document) => {
     try {
       const endpoint = clientId
-        ? `http://localhost:3000/api/documents/${doc.id}/download`
-        : `http://localhost:3000/api/documents/me/${doc.id}/download`
+        ? `${process.env.NEXT_PUBLIC_API_URL}/documents/${doc.id}/download`
+        : `${process.env.NEXT_PUBLIC_API_URL}/documents/me/${doc.id}/download`
 
       const response = await fetch(endpoint, {
         headers: {
@@ -337,8 +337,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
 
       // Use endpoint correto baseado no contexto
       const endpoint = clientId
-        ? 'http://localhost:3000/api/documents'
-        : 'http://localhost:3000/api/documents/me'
+        ? `${process.env.NEXT_PUBLIC_API_URL}/documents`
+        : `${process.env.NEXT_PUBLIC_API_URL}/documents/me`
 
       xhr.open('POST', endpoint)
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('accessToken')}`)

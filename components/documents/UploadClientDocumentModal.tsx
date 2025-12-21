@@ -78,7 +78,7 @@ export function UploadClientDocumentModal({
   const fetchFolders = async () => {
     try {
       setIsLoadingFolders(true);
-      const response = await fetch('http://localhost:3000/api/documents/me/grouped', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/documents/me/grouped`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -230,7 +230,7 @@ export function UploadClientDocumentModal({
         setIsUploading(false);
       });
 
-      xhr.open('POST', 'http://localhost:3000/api/documents/me');
+      xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL}/documents/me`);
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('accessToken')}`);
       xhr.send(formData);
     } catch (error: any) {

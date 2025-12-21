@@ -170,7 +170,7 @@ export function ClientUploadDocumentModal({
         setIsUploading(false);
       });
 
-      xhr.open('POST', 'http://localhost:3000/api/documents/upload-response');
+      xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL}/documents/upload-response`);
       xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('accessToken')}`);
       xhr.send(formData);
     } catch (error: any) {

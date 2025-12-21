@@ -92,7 +92,7 @@ export function PlanLimitsInfo() {
         throw new Error('Token não encontrado');
       }
 
-      const response = await fetch('http://localhost:3000/api/clients/me/usage', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/me/usage`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

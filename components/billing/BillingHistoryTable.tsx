@@ -34,7 +34,7 @@ export function BillingHistoryTable() {
   const fetchInvoices = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:3000/api/invoices/me', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invoices/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
