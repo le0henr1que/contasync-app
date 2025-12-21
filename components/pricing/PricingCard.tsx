@@ -77,11 +77,12 @@ export function PricingCard({ plan, interval }: PricingCardProps) {
       features.push({ name: 'White Label', included: plan.featuresJson.whiteLabel });
     }
     if (plan.featuresJson.support) {
-      const supportText = {
+      const supportMap: Record<string, string> = {
         email: 'Suporte por email',
         priority: 'Suporte prioritário',
         dedicated: 'Suporte dedicado',
-      }[plan.featuresJson.support] || 'Suporte';
+      };
+      const supportText = supportMap[plan.featuresJson.support as string] || 'Suporte';
       features.push({ name: supportText, included: true });
     }
   }

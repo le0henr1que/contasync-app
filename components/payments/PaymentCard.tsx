@@ -55,6 +55,7 @@ export interface Payment {
       email: string;
     };
   };
+  title: string;
   amount: string | number;
   paymentDate: string | null;
   dueDate: string;

@@ -75,9 +75,9 @@ export class HttpClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
 
     if (this.accessToken) {
@@ -163,8 +163,8 @@ export class HttpClient {
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
-    const headers: HeadersInit = {
-      ...options?.headers,
+    const headers: Record<string, string> = {
+      ...(options?.headers as Record<string, string>),
     };
 
     if (this.accessToken) {

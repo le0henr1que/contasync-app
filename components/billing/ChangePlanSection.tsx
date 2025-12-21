@@ -36,6 +36,7 @@ interface CurrentSubscription {
   planId: string;
   planSlug: string;
   status?: string;
+  stripeSubscriptionId?: string | null;
 }
 
 export function ChangePlanSection() {

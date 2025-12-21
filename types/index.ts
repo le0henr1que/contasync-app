@@ -1,6 +1,6 @@
 export type Role = 'ADMIN' | 'ACCOUNTANT' | 'CLIENT';
 
-export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED';
+export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'EXPIRED' | 'INCOMPLETE';
 
 export type DocumentType = 'NFE' | 'NFSE' | 'CTE' | 'RECEIPT' | 'STATEMENT' | 'OTHER';
 
@@ -9,6 +9,41 @@ export type PaymentStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELED';
 export type PaymentType = 'CLIENT' | 'OFFICE';
 
 export type RequestStatus = 'PENDING' | 'FULFILLED' | 'EXPIRED';
+
+export interface Subscription {
+  id: string;
+  accountantId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  interval: 'MONTHLY' | 'YEARLY';
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  trialEnd?: string;
+  canceledAt?: string;
+  cancelAtPeriodEnd: boolean;
+  plan?: Plan;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  priceMonthly: number;
+  priceYearly: number;
+  limitsJson: {
+    maxClients?: number;
+    maxPayments?: number;
+    maxExpenses?: number;
+    maxDocuments?: number;
+    storageGB?: number;
+  };
+  featuresJson: {
+    apiAccess?: boolean;
+    prioritySupport?: boolean;
+    multiUser?: boolean;
+  };
+}
 
 export interface User {
   id: string;
@@ -20,6 +55,9 @@ export interface User {
   clientId?: string;
   expenseModuleEnabled?: boolean;
   onboardingCompleted?: boolean;
+  subscriptionStatus?: SubscriptionStatus;
+  subscription?: Subscription;
+  trialEndsAt?: string;
   createdAt: string;
   updatedAt: string;
 }

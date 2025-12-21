@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface Client {
   companyName?: string;
 }
 
-export default function NewPaymentPage() {
+function NewPaymentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedClientId = searchParams.get('clientId');
@@ -360,5 +360,19 @@ export default function NewPaymentPage() {
         </form>
       </div>
     </DashboardLayout>
+  );
+}
+
+export default function NewPaymentPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </DashboardLayout>
+    }>
+      <NewPaymentForm />
+    </Suspense>
   );
 }

@@ -47,59 +47,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+// Interface for client data
+interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  cnpj: string;
+  companyName: string;
+  expenseModuleEnabled: boolean;
+  status: string;
+  pendingDocuments: number;
+  createdAt: string;
+}
+
 // Mock data - será substituído por dados da API
-const mockClients = [
-  {
-    id: '1',
-    name: 'ABC Contabilidade Ltda',
-    email: 'contato@abc.com.br',
-    phone: '(11) 98765-4321',
-    cnpj: '12.345.678/0001-90',
-    status: 'ACTIVE',
-    pendingDocuments: 2,
-    createdAt: '2024-01-15',
-  },
-  {
-    id: '2',
-    name: 'XYZ Comércio S.A.',
-    email: 'financeiro@xyz.com',
-    phone: '(21) 99876-5432',
-    cnpj: '98.765.432/0001-10',
-    status: 'ACTIVE',
-    pendingDocuments: 0,
-    createdAt: '2024-02-20',
-  },
-  {
-    id: '3',
-    name: 'DEF Serviços',
-    email: 'admin@def.com.br',
-    phone: '(11) 97654-3210',
-    cnpj: '45.678.901/0001-23',
-    status: 'INACTIVE',
-    pendingDocuments: 5,
-    createdAt: '2023-12-10',
-  },
-  {
-    id: '4',
-    name: 'GHI Indústria',
-    email: 'contato@ghi.ind.br',
-    phone: '(47) 98765-1234',
-    cnpj: '23.456.789/0001-45',
-    status: 'ACTIVE',
-    pendingDocuments: 1,
-    createdAt: '2024-03-05',
-  },
-  {
-    id: '5',
-    name: 'JKL Consultoria',
-    email: 'comercial@jkl.com',
-    phone: '(11) 96543-2109',
-    cnpj: '67.890.123/0001-67',
-    status: 'PENDING',
-    pendingDocuments: 8,
-    createdAt: '2024-03-20',
-  },
-];
+const mockClients: Client[] = [];
 
 const statusConfig = {
   ACTIVE: { label: 'Ativo', variant: 'default' as const },
@@ -119,7 +82,7 @@ export default function ClientsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<any>(null);
   const [deletingClient, setDeletingClient] = useState<{ id: string; name: string } | null>(null);
-  const [clients, setClients] = useState(mockClients);
+  const [clients, setClients] = useState<Client[]>(mockClients);
   const [invitations, setInvitations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 10;
