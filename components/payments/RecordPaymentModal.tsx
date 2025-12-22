@@ -111,7 +111,7 @@ export function RecordPaymentModal({
       fetchClients();
       if (payment) {
         // Pre-fill form with payment data
-        setClientId(payment.clientId);
+        setClientId(payment.clientId || '');
         setTitle(payment.title || '');
         const amountValue = typeof payment.amount === 'string'
           ? parseFloat(payment.amount)

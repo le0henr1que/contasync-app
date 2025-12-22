@@ -57,6 +57,11 @@ const statusConfig: Record<
     variant: 'default',
     icon: <CheckCircle className="h-4 w-4" />,
   },
+  AWAITING_VALIDATION: {
+    label: 'Aguardando Validação',
+    variant: 'secondary',
+    icon: <Clock className="h-4 w-4" />,
+  },
   PAID: {
     label: 'Pago',
     variant: 'default',
@@ -67,7 +72,7 @@ const statusConfig: Record<
     variant: 'destructive',
     icon: <AlertCircle className="h-4 w-4" />,
   },
-  CANCELLED: {
+  CANCELED: {
     label: 'Cancelado',
     variant: 'outline',
     icon: <XCircle className="h-4 w-4" />,
@@ -90,7 +95,7 @@ export function PaymentDetailsModal({
   };
 
   const isOverdue = () => {
-    if (payment.status === 'PAID' || payment.status === 'CANCELLED') {
+    if (payment.status === 'PAID' || payment.status === 'CANCELED') {
       return false;
     }
     const dueDate = new Date(payment.dueDate);
@@ -222,7 +227,7 @@ export function PaymentDetailsModal({
             </div>
 
             {/* Paid Date */}
-            {payment.paidDate && (
+            {payment.paymentDate && (
               <div className="flex items-start gap-3">
                 <div className="rounded-lg bg-green-100 p-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
@@ -230,7 +235,7 @@ export function PaymentDetailsModal({
                 <div>
                   <p className="text-sm text-muted-foreground">Data de Pagamento</p>
                   <p className="text-lg font-semibold text-green-600">
-                    {format(new Date(payment.paidDate), 'dd/MM/yyyy', {
+                    {format(new Date(payment.paymentDate), 'dd/MM/yyyy', {
                       locale: ptBR,
                     })}
                   </p>

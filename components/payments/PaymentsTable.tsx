@@ -56,6 +56,11 @@ const statusConfig: Record<
     variant: 'default',
     icon: <CheckCircle className="h-3 w-3" />,
   },
+  AWAITING_VALIDATION: {
+    label: 'Aguardando Validação',
+    variant: 'secondary',
+    icon: <Clock className="h-3 w-3" />,
+  },
   PAID: {
     label: 'Pago',
     variant: 'default',
@@ -66,7 +71,7 @@ const statusConfig: Record<
     variant: 'destructive',
     icon: <AlertCircle className="h-3 w-3" />,
   },
-  CANCELLED: {
+  CANCELED: {
     label: 'Cancelado',
     variant: 'outline',
     icon: <XCircle className="h-3 w-3" />,
@@ -87,7 +92,7 @@ export function PaymentsTable({
   };
 
   const isOverdue = (payment: Payment) => {
-    if (payment.status === 'PAID' || payment.status === 'CANCELLED') {
+    if (payment.status === 'PAID' || payment.status === 'CANCELED') {
       return false;
     }
     const dueDate = new Date(payment.dueDate);
@@ -184,10 +189,10 @@ export function PaymentsTable({
                         locale: ptBR,
                       })}
                     </span>
-                    {payment.paidDate && (
+                    {payment.paymentDate && (
                       <span className="text-xs text-muted-foreground">
                         Pago em:{' '}
-                        {format(new Date(payment.paidDate), 'dd/MM/yyyy', {
+                        {format(new Date(payment.paymentDate), 'dd/MM/yyyy', {
                           locale: ptBR,
                         })}
                       </span>

@@ -4,7 +4,7 @@ export type SubscriptionStatus = 'TRIALING' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED'
 
 export type DocumentType = 'NFE' | 'NFSE' | 'CTE' | 'RECEIPT' | 'STATEMENT' | 'OTHER';
 
-export type PaymentStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELED';
+export type PaymentStatus = 'PENDING' | 'AWAITING_INVOICE' | 'READY_TO_PAY' | 'AWAITING_VALIDATION' | 'PAID' | 'OVERDUE' | 'CANCELED';
 
 export type PaymentType = 'CLIENT' | 'OFFICE';
 

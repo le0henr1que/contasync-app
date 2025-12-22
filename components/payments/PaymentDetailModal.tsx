@@ -28,7 +28,8 @@ import {
   Eye,
   Loader2,
 } from 'lucide-react';
-import { Payment, PaymentStatus, PaymentMethod } from './PaymentCard';
+import { Payment, PaymentMethod } from './PaymentCard';
+import { PaymentStatus } from '@/hooks/usePayments';
 import { toast } from 'sonner';
 
 interface PaymentDetailModalProps {
@@ -147,8 +148,8 @@ export function PaymentDetailModal({
   if (!payment) return null;
 
   const statusInfo = statusConfig[payment.status];
-  const paymentMethodInfo = payment.paymentMethod
-    ? paymentMethodConfig[payment.paymentMethod]
+  const paymentMethodInfo = payment.paymentMethod && payment.paymentMethod in paymentMethodConfig
+    ? paymentMethodConfig[payment.paymentMethod as PaymentMethod]
     : null;
 
   const clientName = payment?.client?.companyName || payment?.client?.user?.name;
@@ -205,7 +206,9 @@ export function PaymentDetailModal({
                 Cliente
               </div>
               <p className="text-lg font-semibold">{clientName}</p>
-              <p className="text-sm text-muted-foreground">{payment.client.user.email}</p>
+              {payment.client.user?.email && (
+                <p className="text-sm text-muted-foreground">{payment.client.user.email}</p>
+              )}
             </div>
           )}
 
@@ -284,10 +287,10 @@ export function PaymentDetailModal({
           </div>
 
           {/* Descrição */}
-          {payment.description && (
+          {payment.notes && (
             <div>
               <label className="text-sm font-medium text-muted-foreground">Descrição</label>
-              <p className="mt-1 whitespace-pre-wrap">{payment.description}</p>
+              <p className="mt-1 whitespace-pre-wrap">{payment.notes}</p>
             </div>
           )}
 

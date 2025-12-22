@@ -55,7 +55,7 @@ export default function ClientPaymentsPage() {
     ).length,
     paid: payments.filter((p) => p.status === PaymentStatus.PAID).length,
     overdue: payments.filter((p) => {
-      if (p.status === 'PAID' || p.status === 'CANCELLED') return false;
+      if (p.status === 'PAID' || p.status === 'CANCELED') return false;
       const dueDate = new Date(p.dueDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -176,7 +176,7 @@ export default function ClientPaymentsPage() {
                     </SelectItem>
                     <SelectItem value={PaymentStatus.PAID}>Pago</SelectItem>
                     <SelectItem value={PaymentStatus.OVERDUE}>Vencido</SelectItem>
-                    <SelectItem value={PaymentStatus.CANCELLED}>Cancelado</SelectItem>
+                    <SelectItem value={PaymentStatus.CANCELED}>Cancelado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

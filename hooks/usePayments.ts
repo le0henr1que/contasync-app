@@ -6,9 +6,10 @@ export enum PaymentStatus {
   PENDING = 'PENDING',
   AWAITING_INVOICE = 'AWAITING_INVOICE',
   READY_TO_PAY = 'READY_TO_PAY',
+  AWAITING_VALIDATION = 'AWAITING_VALIDATION',
   PAID = 'PAID',
   OVERDUE = 'OVERDUE',
-  CANCELLED = 'CANCELLED',
+  CANCELED = 'CANCELED',
 }
 
 export enum PaymentType {
@@ -31,11 +32,15 @@ export interface Payment {
   title: string;
   amount: number;
   dueDate: string;
-  paidDate: string | null;
+  paymentDate: string | null;
   paymentMethod: string | null;
   reference: string | null;
   notes: string | null;
   status: PaymentStatus;
+  receiptPath: string | null;
+  fileName: string | null;
+  mimeType: string | null;
+  fileSize: number | null;
   isRecurring: boolean;
   recurringFrequency: RecurringFrequency | null;
   recurringDayOfMonth: number | null;

@@ -644,9 +644,9 @@ export default function PaymentsPage() {
                           <TableCell>
                             <div className="flex flex-col">
                               <span className="font-medium">{payment.title}</span>
-                              {payment.description && (
+                              {payment.notes && (
                                 <span className="text-xs text-muted-foreground">
-                                  {payment.description}
+                                  {payment.notes}
                                 </span>
                               )}
                             </div>
@@ -654,7 +654,7 @@ export default function PaymentsPage() {
                           {!isClient && payment.client && (
                             <TableCell>
                               <span className="text-sm">
-                                {payment.client.companyName || payment.client.user.name}
+                                {payment.client.companyName || payment.client.user?.name || payment.client.name || '-'}
                               </span>
                             </TableCell>
                           )}

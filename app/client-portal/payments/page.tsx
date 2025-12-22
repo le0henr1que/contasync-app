@@ -97,7 +97,7 @@ const sortOptions = [
   { value: 'amount', label: 'Valor' },
 ];
 
-type PaymentStatus = 'PENDING' | 'AWAITING_INVOICE' | 'READY_TO_PAY' | 'AWAITING_VALIDATION' | 'PAID' | 'OVERDUE' | 'CANCELLED';
+type PaymentStatus = 'PENDING' | 'AWAITING_INVOICE' | 'READY_TO_PAY' | 'AWAITING_VALIDATION' | 'PAID' | 'OVERDUE' | 'CANCELED';
 
 const statusConfig: Record<
   PaymentStatus,
@@ -137,7 +137,7 @@ const statusConfig: Record<
     variant: 'destructive',
     icon: <AlertCircle className="h-3 w-3" />,
   },
-  CANCELLED: {
+  CANCELED: {
     label: 'Cancelado',
     variant: 'outline',
     icon: <XCircle className="h-3 w-3" />,
@@ -153,7 +153,7 @@ function formatCurrency(value: string | number): string {
 }
 
 function isOverdue(payment: Payment): boolean {
-  if (payment.status === 'PAID' || payment.status === 'CANCELLED') {
+  if (payment.status === 'PAID' || payment.status === 'CANCELED') {
     return false;
   }
   const dueDate = new Date(payment.dueDate);
@@ -585,10 +585,10 @@ export default function ClientPaymentsPage() {
                                   locale: ptBR,
                                 })}
                               </span>
-                              {payment.paidDate && (
+                              {payment.paymentDate && (
                                 <span className="text-xs text-muted-foreground">
                                   Pago em:{' '}
-                                  {format(new Date(payment.paidDate), 'dd/MM/yyyy', {
+                                  {format(new Date(payment.paymentDate), 'dd/MM/yyyy', {
                                     locale: ptBR,
                                   })}
                                 </span>
@@ -617,7 +617,7 @@ export default function ClientPaymentsPage() {
                         </TableCell>
 
                         <TableCell onClick={(e) => e.stopPropagation()}>
-                          {payment.receiptUrl ? (
+                          {payment.receiptPath ? (
                             <div className="flex items-center gap-2">
                               <CheckCircle className="h-4 w-4 text-green-600" />
                               <span className="text-sm text-muted-foreground">Enviado</span>

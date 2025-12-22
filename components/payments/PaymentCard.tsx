@@ -9,6 +9,7 @@ import {
   CardTitle,
   CardAction,
 } from '@/components/ui/card';
+import { PaymentType as ImportedPaymentType, PaymentStatus as ImportedPaymentStatus, RecurringFrequency as ImportedRecurringFrequency } from '@/hooks/usePayments';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,7 +35,7 @@ import {
   Zap,
 } from 'lucide-react';
 
-export type PaymentStatus = 'PENDING' | 'PAID' | 'OVERDUE' | 'CANCELED';
+// Using PaymentStatus from usePayments
 export type PaymentMethod =
   | 'CASH'
   | 'PIX'
@@ -45,34 +46,40 @@ export type PaymentMethod =
 
 export interface Payment {
   id: string;
-  clientId: string;
-  client: {
+  clientId: string | null;
+  accountantId: string;
+  paymentType: ImportedPaymentType;
+  client?: {
     id: string;
-    companyName: string | null;
-    user: {
+    name: string;
+    companyName?: string;
+    user?: {
       id: string;
       name: string;
       email: string;
     };
   };
   title: string;
-  amount: string | number;
+  amount: number;
   paymentDate: string | null;
   dueDate: string;
-  paymentMethod: PaymentMethod | null;
+  paymentMethod: PaymentMethod | string | null;
   reference: string | null;
   notes: string | null;
-  status: PaymentStatus;
+  status: ImportedPaymentStatus;
   receiptPath: string | null;
   fileName: string | null;
   mimeType: string | null;
   fileSize: number | null;
   // Recurring payment fields
-  isRecurring?: boolean;
-  recurringFrequency?: 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUAL' | 'YEARLY' | null;
-  recurringDayOfMonth?: number | null;
-  recurringEndDate?: string | null;
-  parentPaymentId?: string | null;
+  isRecurring: boolean;
+  recurringFrequency: ImportedRecurringFrequency | null;
+  recurringDayOfMonth: number | null;
+  recurringEndDate: string | null;
+  parentPaymentId: string | null;
+  requiresInvoice: boolean;
+  invoiceAttachedAt: string | null;
+  invoiceAttachedBy: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,13 +93,16 @@ interface PaymentCardProps {
 }
 
 const statusConfig: Record<
-  PaymentStatus,
+  ImportedPaymentStatus,
   { variant: 'default' | 'success' | 'warning' | 'destructive' | 'info'; label: string }
 > = {
-  PENDING: { variant: 'warning', label: 'Pendente' },
-  PAID: { variant: 'success', label: 'Pago' },
-  OVERDUE: { variant: 'destructive', label: 'Atrasado' },
-  CANCELED: { variant: 'info', label: 'Cancelado' },
+  [ImportedPaymentStatus.PENDING]: { variant: 'warning', label: 'Pendente' },
+  [ImportedPaymentStatus.AWAITING_INVOICE]: { variant: 'warning', label: 'Aguardando NF' },
+  [ImportedPaymentStatus.READY_TO_PAY]: { variant: 'info', label: 'Pronto para Pagar' },
+  [ImportedPaymentStatus.AWAITING_VALIDATION]: { variant: 'warning', label: 'Aguardando Validação' },
+  [ImportedPaymentStatus.PAID]: { variant: 'success', label: 'Pago' },
+  [ImportedPaymentStatus.OVERDUE]: { variant: 'destructive', label: 'Atrasado' },
+  [ImportedPaymentStatus.CANCELED]: { variant: 'info', label: 'Cancelado' },
 };
 
 const paymentMethodConfig: Record<
@@ -123,17 +133,17 @@ export function PaymentCard({
   onAttachReceipt,
 }: PaymentCardProps) {
   const statusInfo = statusConfig[payment.status];
-  const paymentMethodInfo = payment.paymentMethod
-    ? paymentMethodConfig[payment.paymentMethod]
+  const paymentMethodInfo = payment.paymentMethod && payment.paymentMethod in paymentMethodConfig
+    ? paymentMethodConfig[payment.paymentMethod as PaymentMethod]
     : null;
 
   const clientName = payment?.client?.companyName || payment?.client?.user?.name;
 
-  const recurringFrequencyLabels = {
-    MONTHLY: 'Mensal',
-    QUARTERLY: 'Trimestral',
-    SEMIANNUAL: 'Semestral',
-    YEARLY: 'Anual',
+  const recurringFrequencyLabels: Record<ImportedRecurringFrequency, string> = {
+    [ImportedRecurringFrequency.MONTHLY]: 'Mensal',
+    [ImportedRecurringFrequency.QUARTERLY]: 'Trimestral',
+    [ImportedRecurringFrequency.SEMI_ANNUALLY]: 'Semestral',
+    [ImportedRecurringFrequency.ANNUALLY]: 'Anual',
   };
 
   return (

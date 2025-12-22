@@ -894,32 +894,9 @@ export default function ClientDetailPage() {
             setShowDeletePaymentDialog(false);
             setSelectedPayment(null);
           }}
-          onConfirm={async () => {
-            if (!selectedPayment) return;
-
-            try {
-              const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/payments/${selectedPayment.id}`,
-                {
-                  method: 'DELETE',
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-                  },
-                }
-              );
-
-              if (!response.ok) {
-                throw new Error('Erro ao excluir pagamento');
-              }
-
-              toast.success('Pagamento excluído com sucesso');
-              fetchClient();
-              refreshPayments();
-              setShowDeletePaymentDialog(false);
-              setSelectedPayment(null);
-            } catch (error: any) {
-              toast.error(error.message || 'Erro ao excluir pagamento');
-            }
+          onSuccess={() => {
+            fetchClient();
+            refreshPayments();
           }}
           payment={selectedPayment}
         />
