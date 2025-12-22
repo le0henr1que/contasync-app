@@ -20,6 +20,7 @@ interface AttachReceiptModalProps {
   onClose: () => void;
   onSuccess: () => void;
   payment: Payment;
+  userRole?: 'CLIENT' | 'ACCOUNTANT';
 }
 
 export function AttachReceiptModal({
@@ -27,6 +28,7 @@ export function AttachReceiptModal({
   onClose,
   onSuccess,
   payment,
+  userRole = 'CLIENT',
 }: AttachReceiptModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -94,16 +96,18 @@ export function AttachReceiptModal({
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/receipt`,
-        {
-          method: 'PATCH',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-          body: formData,
-        }
-      );
+      // Use different endpoint based on user role
+      const endpoint = userRole === 'CLIENT'
+        ? `${process.env.NEXT_PUBLIC_API_URL}/payments/me/${payment.id}/receipt`
+        : `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/receipt`;
+
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorData = await response.json();

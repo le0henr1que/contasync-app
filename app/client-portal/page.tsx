@@ -7,9 +7,21 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, CreditCard, TrendingUp, AlertCircle, Clock, CheckCircle, Plus, Upload, Receipt } from 'lucide-react';
+import {
+  FileText,
+  CreditCard,
+  TrendingUp,
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  Plus,
+  Upload,
+  Receipt,
+  ArrowRight,
+  Eye,
+  DollarSign,
+} from 'lucide-react';
 import Link from 'next/link';
-import { AccountantPlanWidget } from '@/components/client-portal/AccountantPlanWidget';
 
 interface ClientProfile {
   id: string;
@@ -118,77 +130,80 @@ export default function ClientPortalPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-1">
             Bem-vindo de volta, {user.name}!
           </p>
         </div>
 
-        {/* Accountant Plan Widget */}
-        <AccountantPlanWidget />
-
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Documentos</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium">Documentos</CardTitle>
+                <FileText className="h-4 w-4 text-muted-foreground" />
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 pt-0">
               <div className="text-2xl font-bold">{statistics.documents.total}</div>
-              <p className="text-xs text-muted-foreground">
-                {statistics.documents.pendingRequests > 0 && (
-                  <span className="text-amber-600 font-medium">
+              <p className="text-xs text-muted-foreground mt-1">
+                {statistics.documents.pendingRequests > 0 ? (
+                  <>
                     {statistics.documents.pendingRequests} pendente{statistics.documents.pendingRequests > 1 ? 's' : ''}
-                  </span>
+                  </>
+                ) : (
+                  'Tudo em dia'
                 )}
-                {statistics.documents.pendingRequests === 0 && 'Tudo em dia'}
               </p>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pagamentos</CardTitle>
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium">Pagamentos</CardTitle>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 pt-0">
               <div className="text-2xl font-bold">{statistics.payments.total}</div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-600">{statistics.payments.paid} pagos</span>
-                {statistics.payments.pending > 0 && (
-                  <> • <span className="text-amber-600">{statistics.payments.pending} pendentes</span></>
-                )}
-                {statistics.payments.overdue > 0 && (
-                  <> • <span className="text-red-600">{statistics.payments.overdue} atrasados</span></>
-                )}
+              <p className="text-xs text-muted-foreground mt-1">
+                {statistics.payments.paid} pagos, {statistics.payments.pending} pendentes
               </p>
             </CardContent>
           </Card>
 
-          <Card className={statistics.pendingItems > 0 ? 'border-amber-200 bg-amber-50' : ''}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Itens Pendentes</CardTitle>
-              <AlertCircle className={`h-4 w-4 ${statistics.pendingItems > 0 ? 'text-amber-600' : 'text-muted-foreground'}`} />
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${statistics.pendingItems > 0 ? 'text-amber-600' : ''}`}>
-                {statistics.pendingItems}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium">Itens Pendentes</CardTitle>
+                <AlertCircle className="h-4 w-4 text-muted-foreground" />
               </div>
-              <p className="text-xs text-muted-foreground">
-                {statistics.documents.pendingRequests} docs + {statistics.payments.withoutReceipt} recibos
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <div className="flex items-center gap-2">
+                <div className="text-2xl font-bold">{statistics.pendingItems}</div>
+                {statistics.pendingItems > 0 && (
+                  <Badge variant="secondary">Atenção</Badge>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Documentos e recibos pendentes
               </p>
             </CardContent>
           </Card>
 
           {clientProfile.expenseModuleEnabled && statistics.expenses && (
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Despesas</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium">Despesas</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6 pt-0">
                 <div className="text-2xl font-bold">{statistics.expenses.total}</div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground mt-1">
                   R$ {(statistics.expenses.totalAmount / 100).toFixed(2)} total
                 </p>
               </CardContent>
@@ -198,34 +213,64 @@ export default function ClientPortalPage() {
 
         {/* Pending Items Alert */}
         {statistics.pendingItems > 0 && (
-          <Card className="border-amber-200 bg-amber-50">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-5 w-5 text-amber-600" />
-                <CardTitle className="text-base">Atenção Necessária</CardTitle>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                    <CardTitle className="text-base">Atenção Necessária</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Você possui {statistics.pendingItems} item{statistics.pendingItems > 1 ? 'ns' : ''} que requer{statistics.pendingItems === 1 ? '' : 'em'} sua ação
+                  </CardDescription>
+                </div>
+                <Badge variant="secondary" className="gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {statistics.pendingItems} {statistics.pendingItems === 1 ? 'item' : 'itens'}
+                </Badge>
               </div>
-              <CardDescription>
-                Você possui {statistics.pendingItems} item{statistics.pendingItems > 1 ? 'ns' : ''} que requer{statistics.pendingItems === 1 ? '' : 'em'} sua ação
-              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
+            <CardContent className="p-6">
+              <div className="space-y-3">
                 {statistics.documents.pendingRequests > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span>{statistics.documents.pendingRequests} documento{statistics.documents.pendingRequests > 1 ? 's' : ''} solicitado{statistics.documents.pendingRequests > 1 ? 's' : ''}</span>
+                  <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.documents.pendingRequests} documento{statistics.documents.pendingRequests > 1 ? 's' : ''} solicitado{statistics.documents.pendingRequests > 1 ? 's' : ''}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Enviados pelo seu contador
+                        </p>
+                      </div>
+                    </div>
                     <Link href="/client-portal/documents">
-                      <Button size="sm" variant="outline">
-                        Ver documentos
+                      <Button size="sm" variant="outline" className="gap-2">
+                        <Eye className="h-4 w-4" />
+                        Ver
                       </Button>
                     </Link>
                   </div>
                 )}
                 {statistics.payments.withoutReceipt > 0 && (
-                  <div className="flex items-center justify-between text-sm">
-                    <span>{statistics.payments.withoutReceipt} pagamento{statistics.payments.withoutReceipt > 1 ? 's' : ''} sem comprovante</span>
+                  <div className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <Receipt className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {statistics.payments.withoutReceipt} pagamento{statistics.payments.withoutReceipt > 1 ? 's' : ''} sem comprovante
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Envie os comprovantes
+                        </p>
+                      </div>
+                    </div>
                     <Link href="/client-portal/payments">
-                      <Button size="sm" variant="outline">
-                        Ver pagamentos
+                      <Button size="sm" variant="outline" className="gap-2">
+                        <Upload className="h-4 w-4" />
+                        Enviar
                       </Button>
                     </Link>
                   </div>
@@ -243,48 +288,89 @@ export default function ClientPortalPage() {
               Acesso rápido às principais funcionalidades
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Link href="/client-portal/documents">
-                <Card className="bg-muted/50 border-dashed cursor-pointer hover:bg-muted transition-colors h-full">
-                  <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                    <FileText className="h-8 w-8 mb-2 text-primary" />
-                    <p className="text-sm font-medium">Ver Documentos</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Acesse seus documentos contábeis
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+          <CardContent className="p-6">
+            <div className="grid gap-4 md:grid-cols-12">
+              <div className="md:col-span-6">
+                <Link href="/client-portal/documents">
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-3 h-auto py-4 w-full"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-medium">Ver Documentos</div>
+                      <div className="text-xs text-muted-foreground">
+                        Acesse seus documentos contábeis
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </Link>
+              </div>
 
-              <Link href="/client-portal/payments">
-                <Card className="bg-muted/50 border-dashed cursor-pointer hover:bg-muted transition-colors h-full">
-                  <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                    <CreditCard className="h-8 w-8 mb-2 text-primary" />
-                    <p className="text-sm font-medium">Ver Pagamentos</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Acompanhe seus pagamentos
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
+              <div className="md:col-span-6">
+                <Link href="/client-portal/payments">
+                  <Button
+                    variant="outline"
+                    className="justify-start gap-3 h-auto py-4 w-full"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <CreditCard className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="text-left flex-1">
+                      <div className="font-medium">Ver Pagamentos</div>
+                      <div className="text-xs text-muted-foreground">
+                        Acompanhe seus pagamentos
+                      </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </Link>
+              </div>
 
               {clientProfile.expenseModuleEnabled && (
-                <Link href="/client-portal/expenses">
-                  <Card className="bg-muted/50 border-dashed cursor-pointer hover:bg-muted transition-colors h-full">
-                    <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                      <TrendingUp className="h-8 w-8 mb-2 text-primary" />
-                      <p className="text-sm font-medium">Ver Despesas</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Gerencie suas despesas
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <div className="md:col-span-6">
+                  <Link href="/client-portal/expenses">
+                    <Button
+                      variant="outline"
+                      className="justify-start gap-3 h-auto py-4 w-full"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <TrendingUp className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left flex-1">
+                        <div className="font-medium">Ver Despesas</div>
+                        <div className="text-xs text-muted-foreground">
+                          Gerencie suas despesas
+                        </div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  </Link>
+                </div>
               )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Empty State - No pending items */}
+        {statistics.pendingItems === 0 && (
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Tudo em dia!</h3>
+                <p className="text-sm text-muted-foreground">
+                  Você não tem nenhuma pendência no momento
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </DashboardLayout>
   );

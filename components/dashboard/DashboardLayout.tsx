@@ -26,7 +26,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Desktop Header */}
         <header className="hidden lg:flex h-16 items-center justify-end gap-4 border-b bg-background px-6">
-          {user?.role === 'CLIENT' && <NotificationCenter />}
+          <NotificationCenter />
         </header>
 
         {/* Page Content */}

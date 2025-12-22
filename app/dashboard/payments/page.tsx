@@ -15,28 +15,52 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
   Plus,
   Search,
   Loader2,
   Receipt,
-  Filter,
   SortAsc,
   SortDesc,
   CalendarIcon,
   X,
+  Eye,
+  Edit,
+  Trash2,
+  Download,
+  MoreVertical,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Bell,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { PaymentCard, Payment } from '@/components/payments/PaymentCard';
+import { Payment } from '@/components/payments/PaymentCard';
 import { RecordPaymentModal } from '@/components/payments/RecordPaymentModal';
 import { AttachReceiptModal } from '@/components/payments/AttachReceiptModal';
+import { AttachDocumentModal } from '@/components/payments/AttachDocumentModal';
 import { PaymentDetailModal } from '@/components/payments/PaymentDetailModal';
 import { ConfirmDeletePaymentDialog } from '@/components/payments/ConfirmDeletePaymentDialog';
 
@@ -54,6 +78,9 @@ interface PaymentsResponse {
 const statusOptions = [
   { value: 'ALL', label: 'Todos os status' },
   { value: 'PENDING', label: 'Pendente' },
+  { value: 'AWAITING_INVOICE', label: 'Aguardando NF' },
+  { value: 'READY_TO_PAY', label: 'Pronto para Pagar' },
+  { value: 'AWAITING_VALIDATION', label: 'Aguardando Validação' },
   { value: 'PAID', label: 'Pago' },
   { value: 'OVERDUE', label: 'Atrasado' },
   { value: 'CANCELED', label: 'Cancelado' },
@@ -112,6 +139,8 @@ export default function PaymentsPage() {
   const [editingPayment, setEditingPayment] = useState<Payment | undefined>(undefined);
   const [showAttachReceiptModal, setShowAttachReceiptModal] = useState(false);
   const [attachingReceiptPayment, setAttachingReceiptPayment] = useState<Payment | undefined>(undefined);
+  const [showAttachDocumentModal, setShowAttachDocumentModal] = useState(false);
+  const [attachingDocumentPayment, setAttachingDocumentPayment] = useState<Payment | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [viewingPayment, setViewingPayment] = useState<Payment | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -230,9 +259,58 @@ export default function PaymentsPage() {
     setShowAttachReceiptModal(true);
   };
 
+  const handleAttachDocument = (payment: Payment) => {
+    setAttachingDocumentPayment(payment);
+    setShowAttachDocumentModal(true);
+  };
+
   const handleDeletePayment = (payment: Payment) => {
     setDeletingPayment(payment);
     setShowDeleteDialog(true);
+  };
+
+  const handleApprovePayment = async (payment: Payment) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao aprovar pagamento');
+      }
+
+      toast.success('Pagamento aprovado com sucesso!');
+      fetchPayments();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao aprovar pagamento');
+    }
+  };
+
+  const handleChargePayment = async (payment: Payment) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/charge`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao enviar cobrança');
+      }
+
+      const data = await response.json();
+      toast.success(data.message || 'Cobrança enviada com sucesso!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao enviar cobrança');
+    }
   };
 
   const toggleSortOrder = () => {
@@ -314,84 +392,90 @@ export default function PaymentsPage() {
 
         {/* Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="grid gap-4 md:grid-cols-6">
-              {/* Search */}
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <CardContent className="p-6">
+            <div className="grid gap-4 md:grid-cols-12">
+              {/* Search - 50% da largura (6/12 colunas) */}
+              <div className="relative md:col-span-6">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por referência, cliente..."
                   value={searchInput}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 !h-10"
                 />
               </div>
 
-              {/* Status Filter */}
-              <Select
-                value={statusFilter}
-                onValueChange={(value) => {
-                  setStatusFilter(value);
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Client Filter - Only for accountants */}
-              {!isClient && (
+              {/* Status Filter - 16.6% (2/12 colunas) */}
+              <div className="md:col-span-2">
                 <Select
-                  value={clientFilter}
+                  value={statusFilter}
                   onValueChange={(value) => {
-                    setClientFilter(value);
+                    setStatusFilter(value);
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Cliente" />
+                  <SelectTrigger className="!h-10 w-full">
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ALL">Todos os clientes</SelectItem>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.companyName || client.user.name}
+                    {statusOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Client Filter - Only for accountants - 16.6% (2/12 colunas) */}
+              {!isClient && (
+                <div className="md:col-span-2">
+                  <Select
+                    value={clientFilter}
+                    onValueChange={(value) => {
+                      setClientFilter(value);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <SelectTrigger className="!h-10 w-full">
+                      <SelectValue placeholder="Cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">Todos os clientes</SelectItem>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.companyName || client.user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
 
-              {/* Period Filter */}
-              <Select
-                value={periodFilter}
-                onValueChange={(value) => {
-                  setPeriodFilter(value);
-                  setCurrentPage(1);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Período" />
-                </SelectTrigger>
-                <SelectContent>
-                  {periodOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Period Filter - Ajusta baseado em isClient */}
+              <div className={isClient ? "md:col-span-3" : "md:col-span-2"}>
+                <Select
+                  value={periodFilter}
+                  onValueChange={(value) => {
+                    setPeriodFilter(value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger className="!h-10 w-full">
+                    <SelectValue placeholder="Período" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {periodOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              {/* Sort */}
-              <div className="flex gap-2">
+              {/* Sort - Ajusta baseado em isClient */}
+              <div className={isClient ? "md:col-span-3 flex gap-2" : "md:col-span-2 flex gap-2"}>
                 <Select
                   value={sortBy}
                   onValueChange={(value) => {
@@ -399,7 +483,7 @@ export default function PaymentsPage() {
                     setCurrentPage(1);
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="!h-10 flex-1">
                     <SelectValue placeholder="Ordenar por" />
                   </SelectTrigger>
                   <SelectContent>
@@ -415,6 +499,7 @@ export default function PaymentsPage() {
                   size="icon"
                   onClick={toggleSortOrder}
                   title={sortOrder === 'asc' ? 'Crescente' : 'Decrescente'}
+                  className="!h-10 !w-10 flex-shrink-0"
                 >
                   {sortOrder === 'asc' ? (
                     <SortAsc className="h-4 w-4" />
@@ -504,7 +589,7 @@ export default function PaymentsPage() {
           </CardContent>
         </Card>
 
-        {/* Payment Grid */}
+        {/* Payments Table */}
         {payments.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -525,19 +610,161 @@ export default function PaymentsPage() {
           </Card>
         ) : (
           <>
-            {/* Grid Layout - 1 column on mobile, 2 on tablet, 3 on desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {payments.map((payment) => (
-                <PaymentCard
-                  key={payment.id}
-                  payment={payment}
-                  onView={handleViewPayment}
-                  onEdit={handleEditPayment}
-                  onDelete={handleDeletePayment}
-                  onAttachReceipt={handleAttachReceipt}
-                />
-              ))}
-            </div>
+            <Card>
+              <CardContent className="p-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12"></TableHead>
+                      <TableHead>Referência</TableHead>
+                      {!isClient && <TableHead>Cliente</TableHead>}
+                      <TableHead>Valor</TableHead>
+                      <TableHead>Vencimento</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {payments.map((payment) => {
+                      const statusConfig = {
+                        PENDING: { label: 'Pendente', variant: 'secondary' as const },
+                        AWAITING_INVOICE: { label: 'Aguardando NF', variant: 'secondary' as const },
+                        READY_TO_PAY: { label: 'Pronto para Pagar', variant: 'default' as const },
+                        AWAITING_VALIDATION: { label: 'Aguardando Validação', variant: 'secondary' as const },
+                        PAID: { label: 'Pago', variant: 'default' as const },
+                        OVERDUE: { label: 'Atrasado', variant: 'destructive' as const },
+                        CANCELED: { label: 'Cancelado', variant: 'outline' as const },
+                      };
+
+                      return (
+                        <TableRow key={payment.id}>
+                          <TableCell>
+                            <Receipt className="h-5 w-5 text-muted-foreground" />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{payment.title}</span>
+                              {payment.description && (
+                                <span className="text-xs text-muted-foreground">
+                                  {payment.description}
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          {!isClient && payment.client && (
+                            <TableCell>
+                              <span className="text-sm">
+                                {payment.client.companyName || payment.client.user.name}
+                              </span>
+                            </TableCell>
+                          )}
+                          <TableCell>
+                            <span className="font-medium">{formatCurrency(payment.amount)}</span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {payment.status === 'OVERDUE' && (
+                                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                              )}
+                              {payment.status === 'AWAITING_INVOICE' && (
+                                <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                              )}
+                              {payment.status === 'AWAITING_VALIDATION' && (
+                                <AlertCircle className="h-4 w-4 text-yellow-600 flex-shrink-0" />
+                              )}
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(payment.dueDate).toLocaleDateString('pt-BR')}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={statusConfig[payment.status as keyof typeof statusConfig].variant}>
+                              {statusConfig[payment.status as keyof typeof statusConfig].label}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
+                                    <span className="sr-only">Ações</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleViewPayment(payment)}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    Visualizar
+                                  </DropdownMenuItem>
+                                  {!isClient && (
+                                    <>
+                                      {(payment.status === 'AWAITING_INVOICE' || payment.status === 'OVERDUE') && (
+                                        <>
+                                          <DropdownMenuItem
+                                            onClick={() => handleAttachDocument(payment)}
+                                            className="text-blue-600"
+                                          >
+                                            <FileText className="mr-2 h-4 w-4" />
+                                            Anexar Nota Fiscal
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                        </>
+                                      )}
+                                      {payment.status === 'AWAITING_VALIDATION' && (
+                                        <>
+                                          <DropdownMenuItem
+                                            onClick={() => handleApprovePayment(payment)}
+                                            className="text-green-600"
+                                          >
+                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                            Aprovar Pagamento
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                        </>
+                                      )}
+                                      {payment.clientId && payment.status !== 'PAID' && payment.status !== 'CANCELED' && (
+                                        <>
+                                          <DropdownMenuItem
+                                            onClick={() => handleChargePayment(payment)}
+                                            className="text-orange-600"
+                                          >
+                                            <Bell className="mr-2 h-4 w-4" />
+                                            Cobrar Pagamento
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                        </>
+                                      )}
+                                      <DropdownMenuItem onClick={() => handleEditPayment(payment)}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Editar
+                                      </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onClick={() => handleDeletePayment(payment)}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Excluir
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  {isClient && payment.status === 'PENDING' && (
+                                    <DropdownMenuItem onClick={() => handleAttachReceipt(payment)}>
+                                      <Download className="mr-2 h-4 w-4" />
+                                      Anexar Comprovante
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
 
             {/* Pagination */}
             {totalPages > 1 && (
@@ -594,8 +821,22 @@ export default function PaymentsPage() {
             setAttachingReceiptPayment(undefined);
           }}
           payment={attachingReceiptPayment}
+          userRole="ACCOUNTANT"
         />
       )}
+
+      <AttachDocumentModal
+        isOpen={showAttachDocumentModal}
+        onClose={() => {
+          setShowAttachDocumentModal(false);
+          setAttachingDocumentPayment(null);
+        }}
+        onSuccess={() => {
+          fetchPayments();
+          setAttachingDocumentPayment(null);
+        }}
+        payment={attachingDocumentPayment}
+      />
 
       <PaymentDetailModal
         isOpen={showDetailModal}

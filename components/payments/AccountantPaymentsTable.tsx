@@ -17,6 +17,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import {
   Eye,
   FileText,
   AlertCircle,
@@ -29,6 +36,9 @@ import {
   Check,
   Download,
   ExternalLink,
+  MoreVertical,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,6 +48,8 @@ import { cn } from '@/lib/utils';
 interface AccountantPaymentsTableProps {
   payments: Payment[];
   onViewDetails?: (payment: Payment) => void;
+  onEdit?: (payment: Payment) => void;
+  onDelete?: (payment: Payment) => void;
   onAttachDocument?: (payment: Payment) => void;
   onDetachDocument?: (payment: Payment, documentId: string) => void;
   onMarkAsPaid?: (payment: Payment) => void;
@@ -88,6 +100,8 @@ const statusConfig: Record<
 export function AccountantPaymentsTable({
   payments,
   onViewDetails,
+  onEdit,
+  onDelete,
   onAttachDocument,
   onDetachDocument,
   onMarkAsPaid,
@@ -165,10 +179,7 @@ export function AccountantPaymentsTable({
             return (
               <TableRow
                 key={payment.id}
-                className={cn(
-                  'cursor-pointer transition-colors hover:bg-muted/50',
-                  overdue && 'bg-destructive/5'
-                )}
+                className="cursor-pointer transition-colors hover:bg-muted/50"
                 onClick={() => onViewDetails?.(payment)}
               >
                 {showClientColumn && (
@@ -214,25 +225,25 @@ export function AccountantPaymentsTable({
                 </TableCell>
 
                 <TableCell>
-                  <div className="flex flex-col gap-1">
-                    <span
-                      className={cn(
-                        'text-sm',
-                        overdue && 'font-semibold text-destructive'
-                      )}
-                    >
-                      {format(new Date(payment.dueDate), 'dd/MM/yyyy', {
-                        locale: ptBR,
-                      })}
-                    </span>
-                    {payment.paidDate && (
-                      <span className="text-xs text-muted-foreground">
-                        Pago em:{' '}
-                        {format(new Date(payment.paidDate), 'dd/MM/yyyy', {
+                  <div className="flex items-center gap-2">
+                    {overdue && (
+                      <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm">
+                        {format(new Date(payment.dueDate), 'dd/MM/yyyy', {
                           locale: ptBR,
                         })}
                       </span>
-                    )}
+                      {payment.paidDate && (
+                        <span className="text-xs text-muted-foreground">
+                          Pago em:{' '}
+                          {format(new Date(payment.paidDate), 'dd/MM/yyyy', {
+                            locale: ptBR,
+                          })}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
 
@@ -340,53 +351,58 @@ export function AccountantPaymentsTable({
                   )}
                 </TableCell>
 
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    {onViewDetails && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewDetails(payment);
-                        }}
-                        title="Ver detalhes"
-                      >
-                        <Eye className="h-4 w-4" />
+                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">Ações</span>
                       </Button>
-                    )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {onViewDetails && (
+                        <DropdownMenuItem onClick={() => onViewDetails(payment)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Visualizar
+                        </DropdownMenuItem>
+                      )}
 
-                    {onAttachDocument && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onAttachDocument(payment);
-                        }}
-                        title="Anexar documento"
-                      >
-                        <LinkIcon className="h-4 w-4" />
-                      </Button>
-                    )}
+                      {onEdit && (
+                        <DropdownMenuItem onClick={() => onEdit(payment)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                      )}
 
-                    {onMarkAsPaid && canMarkAsPaid && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onMarkAsPaid(payment);
-                        }}
-                        title="Marcar como pago"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                      {onAttachDocument && (
+                        <DropdownMenuItem onClick={() => onAttachDocument(payment)}>
+                          <LinkIcon className="mr-2 h-4 w-4" />
+                          Anexar Documento
+                        </DropdownMenuItem>
+                      )}
+
+                      {onMarkAsPaid && canMarkAsPaid && (
+                        <DropdownMenuItem onClick={() => onMarkAsPaid(payment)}>
+                          <Check className="mr-2 h-4 w-4" />
+                          Marcar como Pago
+                        </DropdownMenuItem>
+                      )}
+
+                      {(onEdit || onDelete) && (onViewDetails || onAttachDocument || onMarkAsPaid) && (
+                        <DropdownMenuSeparator />
+                      )}
+
+                      {onDelete && (
+                        <DropdownMenuItem
+                          onClick={() => onDelete(payment)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );

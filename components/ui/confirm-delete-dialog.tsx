@@ -51,7 +51,7 @@ export function ConfirmDeleteDialog({
               onConfirm();
             }}
             disabled={isLoading}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="bg-destructive text-white hover:bg-destructive/90"
           >
             {isLoading ? 'Deletando...' : 'Deletar'}
           </AlertDialogAction>

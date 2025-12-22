@@ -1,15 +1,58 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Folder, File, Plus, ChevronRight, Trash2, Eye, Download, Loader2, Upload, X } from "lucide-react"
+import {
+  Folder,
+  File,
+  Plus,
+  Trash2,
+  Eye,
+  Download,
+  Loader2,
+  Upload,
+  X,
+  MoreVertical,
+  FileText
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 type Document = {
   id: string
@@ -32,6 +75,16 @@ type FolderType = {
 
 interface DocumentManagerProps {
   clientId?: string // Para contadora ver documentos de um cliente específico
+}
+
+const documentTypeConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
+  NFE: { label: 'NF-e', variant: 'default' },
+  NFSE: { label: 'NFS-e', variant: 'default' },
+  RECEIPT: { label: 'Recibo', variant: 'secondary' },
+  CONTRACT: { label: 'Contrato', variant: 'outline' },
+  BANK_STATEMENT: { label: 'Comp. Bancário', variant: 'secondary' },
+  STATEMENT: { label: 'Declaração', variant: 'outline' },
+  OTHER: { label: 'Outros', variant: 'outline' },
 }
 
 export default function DocumentManager({ clientId }: DocumentManagerProps) {
@@ -366,150 +419,89 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-[350px_1fr]">
         {/* Sidebar - Folders List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium text-foreground">Pastas</h2>
-            {!clientId && (
-              <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Nova Pasta
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Criar Nova Pasta</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="folder-name">Nome da Pasta</Label>
-                      <Input
-                        id="folder-name"
-                        placeholder="Digite o nome da pasta"
-                        value={newFolderName}
-                        onChange={(e) => setNewFolderName(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && createFolder()}
-                      />
-                    </div>
-                    <Button onClick={createFolder} className="w-full">
-                      Criar Pasta
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Pastas</CardTitle>
+                <CardDescription>Organizadas por categoria</CardDescription>
+              </div>
+              {!clientId && (
+                <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Nova
                     </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            {folders.length === 0 ? (
-              <Card className="border-dashed p-8 text-center">
-                <Folder className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Nenhuma pasta encontrada</p>
-              </Card>
-            ) : (
-              folders.map((folder) => (
-                <Card
-                  key={folder.id}
-                  className={`group cursor-pointer transition-colors hover:bg-accent ${
-                    selectedFolder === folder.id ? "bg-accent ring-1 ring-ring" : ""
-                  }`}
-                  onClick={() => setSelectedFolder(folder.id)}
-                >
-                  <div className="flex items-center gap-3 p-3">
-                    <Folder className="h-5 w-5 text-foreground flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground truncate">{folder.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {folder.documents.length} documento(s)
-                      </p>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Criar Nova Pasta</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="folder-name">Nome da Pasta</Label>
+                        <Input
+                          id="folder-name"
+                          placeholder="Digite o nome da pasta"
+                          value={newFolderName}
+                          onChange={(e) => setNewFolderName(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && createFolder()}
+                          className="!h-10"
+                        />
+                      </div>
                     </div>
-                    {selectedFolder === folder.id && <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
-                    {!folder.isDefault && !clientId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteFolder(folder.id, folder.isDefault)
-                        }}
-                        className="opacity-0 group-hover:opacity-100 h-8 w-8 p-0 flex-shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+                        Cancelar
                       </Button>
-                    )}
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Main Content - Documents */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-medium text-foreground">Documentos</h2>
-              {selectedFolder && (
-                <p className="text-sm text-muted-foreground">{folders.find((f) => f.id === selectedFolder)?.name}</p>
+                      <Button onClick={createFolder}>
+                        Criar Pasta
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
-            {selectedFolder && (
-              <Button onClick={openUploadModal} size="sm" className="gap-2">
-                <Upload className="h-4 w-4" />
-                Enviar Documento
-              </Button>
-            )}
-          </div>
-
-          <Card>
-            {!selectedFolder ? (
-              <div className="p-12 text-center">
-                <Folder className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-                <p className="text-muted-foreground">Selecione uma pasta para ver os documentos</p>
-              </div>
-            ) : getFolderDocuments(selectedFolder).length === 0 ? (
-              <div className="p-12 text-center">
-                <File className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
-                <p className="text-muted-foreground">Nenhum documento nesta pasta</p>
+          </CardHeader>
+          <CardContent className="p-6">
+            {folders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Folder className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Nenhuma pasta encontrada</h3>
+                <p className="text-sm text-muted-foreground">
+                  {!clientId && 'Crie uma pasta para organizar seus documentos'}
+                </p>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {getFolderDocuments(selectedFolder).map((doc) => (
-                  <div key={doc.id} className="group flex items-center gap-3 p-4 hover:bg-accent transition-colors">
-                    <File className="h-5 w-5 text-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground truncate">{doc.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Criado em {new Date(doc.createdAt).toLocaleDateString("pt-BR")}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => viewDocumentDetails(doc)}
-                        className="h-8 w-8 p-0"
-                        title="Visualizar documento"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => downloadDocument(doc)}
-                        className="h-8 w-8 p-0"
-                        title="Baixar documento"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      {!clientId && (
+              <div className="space-y-2">
+                {folders.map((folder) => (
+                  <div
+                    key={folder.id}
+                    className={`group cursor-pointer rounded-lg border p-3 transition-colors hover:bg-accent ${
+                      selectedFolder === folder.id ? "bg-accent ring-2 ring-primary" : ""
+                    }`}
+                    onClick={() => setSelectedFolder(folder.id)}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Folder className="h-5 w-5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{folder.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {folder.documents.length} documento{folder.documents.length !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                      </div>
+                      {!folder.isDefault && !clientId && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => deleteDocument(doc.id)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deleteFolder(folder.id, folder.isDefault)
+                          }}
                           className="h-8 w-8 p-0"
-                          title="Excluir documento"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -519,8 +511,126 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
                 ))}
               </div>
             )}
-          </Card>
-        </div>
+          </CardContent>
+        </Card>
+
+        {/* Main Content - Documents */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Documentos</CardTitle>
+                <CardDescription>
+                  {selectedFolder
+                    ? folders.find((f) => f.id === selectedFolder)?.name
+                    : 'Selecione uma pasta para visualizar'}
+                </CardDescription>
+              </div>
+              {selectedFolder && (
+                <Button onClick={openUploadModal} size="sm" className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Enviar Documento
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {!selectedFolder ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Folder className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Selecione uma pasta</h3>
+                <p className="text-sm text-muted-foreground">
+                  Escolha uma pasta na lista ao lado para visualizar os documentos
+                </p>
+              </div>
+            ) : getFolderDocuments(selectedFolder).length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Nenhum documento</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Esta pasta está vazia
+                </p>
+                <Button onClick={openUploadModal} size="sm" className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Enviar Primeiro Documento
+                </Button>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12"></TableHead>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Data de Envio</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getFolderDocuments(selectedFolder).map((doc) => {
+                    const typeConfig = documentTypeConfig[doc.type] || documentTypeConfig.OTHER
+
+                    return (
+                      <TableRow key={doc.id}>
+                        <TableCell>
+                          <File className="h-5 w-5 text-muted-foreground" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium">{doc.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {doc.fileName}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={typeConfig.variant}>
+                            {typeConfig.label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {format(new Date(doc.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">Ações</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => viewDocumentDetails(doc)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Visualizar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => downloadDocument(doc)}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Baixar
+                              </DropdownMenuItem>
+                              {!clientId && (
+                                <>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => deleteDocument(doc.id)}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Upload Document Modal */}
@@ -538,7 +648,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
             <div className="space-y-2">
               <Label htmlFor="folder">Pasta *</Label>
               <Select value={docFolderId} onValueChange={setDocFolderId} disabled={isUploadingDoc}>
-                <SelectTrigger className={errors.folder ? 'border-destructive' : ''}>
+                <SelectTrigger className={`!h-10 w-full ${errors.folder ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Selecione a pasta" />
                 </SelectTrigger>
                 <SelectContent>
@@ -558,7 +668,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
             <div className="space-y-2">
               <Label htmlFor="type">Tipo de Documento *</Label>
               <Select value={docType} onValueChange={setDocType} disabled={isUploadingDoc}>
-                <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
+                <SelectTrigger className={`!h-10 w-full ${errors.type ? 'border-destructive' : ''}`}>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -651,6 +761,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
                 onChange={(e) => setDocTitle(e.target.value)}
                 placeholder="Nome do documento"
                 disabled={isUploadingDoc}
+                className="!h-10"
               />
             </div>
 

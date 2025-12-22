@@ -237,54 +237,58 @@ export default function DocumentsPage() {
 
         {/* Filters */}
         <Card>
-          <CardContent className="p-4">
-            <div className="grid gap-4 md:grid-cols-4">
+          <CardContent className="p-6">
+            <div className="grid gap-4 md:grid-cols-12">
               {/* Search */}
-              <div className="relative md:col-span-2">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <div className="relative md:col-span-6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por nome do documento ou cliente..."
                   value={search}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 !h-10"
                 />
               </div>
 
               {/* Type Filter */}
-              <Select value={typeFilter} onValueChange={(value) => {
-                setTypeFilter(value);
-                setCurrentPage(1);
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os tipos</SelectItem>
-                  {Object.entries(documentTypeLabels).map(([key, label]) => (
-                    <SelectItem key={key} value={key}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="md:col-span-3">
+                <Select value={typeFilter} onValueChange={(value) => {
+                  setTypeFilter(value);
+                  setCurrentPage(1);
+                }}>
+                  <SelectTrigger className="!h-10 w-full">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Todos os tipos</SelectItem>
+                    {Object.entries(documentTypeLabels).map(([key, label]) => (
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Status Filter */}
-              <Select value={statusFilter} onValueChange={(value) => {
-                setStatusFilter(value);
-                setCurrentPage(1);
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">Todos os status</SelectItem>
-                  {Object.entries(statusConfig).map(([key, config]) => (
-                    <SelectItem key={key} value={key}>
-                      {config.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="md:col-span-3">
+                <Select value={statusFilter} onValueChange={(value) => {
+                  setStatusFilter(value);
+                  setCurrentPage(1);
+                }}>
+                  <SelectTrigger className="!h-10 w-full">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">Todos os status</SelectItem>
+                    {Object.entries(statusConfig).map(([key, config]) => (
+                      <SelectItem key={key} value={key}>
+                        {config.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -307,79 +311,76 @@ export default function DocumentsPage() {
         ) : (
           <>
             <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>Nome do Documento</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    {!isClient && <TableHead>Cliente</TableHead>}
-                    <TableHead>Data de Envio</TableHead>
-                    <TableHead>Tamanho</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {documents.map((doc) => (
-                    <TableRow key={doc.id}>
-                      <TableCell>
-                        <File className="h-5 w-5 text-muted-foreground" />
-                      </TableCell>
-                      <TableCell className="font-medium">{doc.title}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {documentTypeLabels[doc.type] || doc.type}
-                        </Badge>
-                      </TableCell>
-                      {!isClient && doc.client && (
+              <CardContent className="p-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12"></TableHead>
+                      <TableHead>Nome do Documento</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      {!isClient && <TableHead>Cliente</TableHead>}
+                      <TableHead>Data de Envio</TableHead>
+                      <TableHead>Tamanho</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {documents.map((doc) => (
+                      <TableRow key={doc.id}>
                         <TableCell>
-                          <button
-                            onClick={() => router.push(`/dashboard/clients/${doc.client.id}`)}
-                            className="text-primary hover:underline"
-                          >
-                            {doc.client.user.name}
-                          </button>
+                          <File className="h-5 w-5 text-muted-foreground" />
                         </TableCell>
-                      )}
-                      <TableCell>
-                        {new Date(doc.createdAt).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatFileSize(doc.fileSize)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={statusConfig[doc.status as keyof typeof statusConfig]?.variant || 'secondary'}>
-                          {statusConfig[doc.status as keyof typeof statusConfig]?.label || doc.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDocument(doc.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          {!isClient && (
+                        <TableCell className="font-medium">{doc.title}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {documentTypeLabels[doc.type] || doc.type}
+                          </Badge>
+                        </TableCell>
+                        {!isClient && doc.client && (
+                          <TableCell>
+                            <button
+                              onClick={() => router.push(`/dashboard/clients/${doc.client.id}`)}
+                              className="text-primary hover:underline"
+                            >
+                              {doc.client.user.name}
+                            </button>
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          {new Date(doc.createdAt).toLocaleDateString('pt-BR')}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatFileSize(doc.fileSize)}
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDeleteClick(doc)}
+                              onClick={() => handleViewDocument(doc.id)}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Eye className="h-4 w-4" />
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                            <Button variant="ghost" size="sm">
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            {!isClient && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteClick(doc)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
             </Card>
 
             {/* Pagination */}

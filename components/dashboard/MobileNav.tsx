@@ -91,7 +91,7 @@ export function MobileNav() {
         </div>
 
         <div className="flex items-center gap-2">
-          {user?.role === 'CLIENT' && <NotificationCenter />}
+          <NotificationCenter />
           <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon">

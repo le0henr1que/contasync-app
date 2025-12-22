@@ -91,7 +91,7 @@ export function ClientActivityTimeline({ clientId }: ClientActivityTimelineProps
     try {
       setIsLoading(true);
       const response = await fetch(
-        `http://localhost:3000/api/clients/${clientId}/activities?page=${page}&limit=${limit}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/clients/${clientId}/activities?page=${page}&limit=${limit}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,

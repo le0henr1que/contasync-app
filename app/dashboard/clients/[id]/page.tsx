@@ -52,9 +52,8 @@ import { EditClientModal } from '@/components/clients/EditClientModal';
 import { ClientActivityTimeline } from '@/components/clients/ClientActivityTimeline';
 import { RecordPaymentModal } from '@/components/payments/RecordPaymentModal';
 import { AccountantPaymentsTable } from '@/components/payments/AccountantPaymentsTable';
-import { AttachDocumentModal } from '@/components/payments/AttachDocumentModal';
-import { MarkAsPaidModal } from '@/components/payments/MarkAsPaidModal';
-import { PaymentDetailsModal } from '@/components/payments/PaymentDetailsModal';
+import { PaymentDetailModal } from '@/components/payments/PaymentDetailModal';
+import { ConfirmDeletePaymentDialog } from '@/components/payments/ConfirmDeletePaymentDialog';
 import { DocumentFolderCard } from '@/components/documents/DocumentFolderCard';
 import DocumentManager from '@/components/documents/DocumentManager';
 import { usePaymentsByClient, type Payment } from '@/hooks/usePayments';
@@ -99,9 +98,9 @@ export default function ClientDetailPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showAttachDocModal, setShowAttachDocModal] = useState(false);
-  const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
-  const [showPaymentDetailsModal, setShowPaymentDetailsModal] = useState(false);
+  const [showEditPaymentModal, setShowEditPaymentModal] = useState(false);
+  const [showPaymentDetailModal, setShowPaymentDetailModal] = useState(false);
+  const [showDeletePaymentDialog, setShowDeletePaymentDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [activeTab, setActiveTab] = useState('info');
   const [paymentPage, setPaymentPage] = useState(1);
@@ -595,15 +594,15 @@ export default function ClientDetailPage() {
                   showClientColumn={false}
                   onViewDetails={(payment) => {
                     setSelectedPayment(payment);
-                    setShowPaymentDetailsModal(true);
+                    setShowPaymentDetailModal(true);
                   }}
-                  onAttachDocument={(payment) => {
+                  onEdit={(payment) => {
                     setSelectedPayment(payment);
-                    setShowAttachDocModal(true);
+                    setShowEditPaymentModal(true);
                   }}
-                  onMarkAsPaid={(payment) => {
+                  onDelete={(payment) => {
                     setSelectedPayment(payment);
-                    setShowMarkAsPaidModal(true);
+                    setShowDeletePaymentDialog(true);
                   }}
                 />
 
@@ -860,40 +859,67 @@ export default function ClientDetailPage() {
           }}
         />
 
-        {/* Attach Document Modal */}
-        <AttachDocumentModal
-          isOpen={showAttachDocModal}
+        {/* Payment Detail Modal */}
+        <PaymentDetailModal
+          isOpen={showPaymentDetailModal}
           onClose={() => {
-            setShowAttachDocModal(false);
+            setShowPaymentDetailModal(false);
+            setSelectedPayment(null);
+          }}
+          payment={selectedPayment}
+          showClientInfo={false}
+        />
+
+        {/* Edit Payment Modal */}
+        <RecordPaymentModal
+          isOpen={showEditPaymentModal}
+          onClose={() => {
+            setShowEditPaymentModal(false);
             setSelectedPayment(null);
           }}
           onSuccess={() => {
-            refreshPayments();
             fetchClient();
-          }}
-          payment={selectedPayment}
-        />
-
-        {/* Mark As Paid Modal */}
-        <MarkAsPaidModal
-          isOpen={showMarkAsPaidModal}
-          onClose={() => {
-            setShowMarkAsPaidModal(false);
+            refreshPayments();
+            setShowEditPaymentModal(false);
             setSelectedPayment(null);
           }}
-          onSuccess={() => {
-            refreshPayments();
-            fetchClient();
-          }}
-          payment={selectedPayment}
+          clientId={clientId}
+          payment={selectedPayment || undefined}
         />
 
-        {/* Payment Details Modal */}
-        <PaymentDetailsModal
-          isOpen={showPaymentDetailsModal}
+        {/* Delete Payment Dialog */}
+        <ConfirmDeletePaymentDialog
+          isOpen={showDeletePaymentDialog}
           onClose={() => {
-            setShowPaymentDetailsModal(false);
+            setShowDeletePaymentDialog(false);
             setSelectedPayment(null);
+          }}
+          onConfirm={async () => {
+            if (!selectedPayment) return;
+
+            try {
+              const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/payments/${selectedPayment.id}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                  },
+                }
+              );
+
+              if (!response.ok) {
+                throw new Error('Erro ao excluir pagamento');
+              }
+
+              toast.success('Pagamento excluído com sucesso');
+              fetchClient();
+              refreshPayments();
+              setShowDeletePaymentDialog(false);
+              setSelectedPayment(null);
+            } catch (error: any) {
+              toast.error(error.message || 'Erro ao excluir pagamento');
+            }
           }}
           payment={selectedPayment}
         />

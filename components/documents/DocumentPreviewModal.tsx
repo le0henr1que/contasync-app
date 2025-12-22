@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Trash2, X, Loader2, File } from 'lucide-react';
+import { Download, Trash2, Loader2, File } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
@@ -52,12 +52,6 @@ const documentTypeLabels: Record<string, string> = {
   STATEMENT: 'Declaração',
   CTE: 'CT-e',
   OTHER: 'Outros',
-};
-
-const statusConfig = {
-  PENDING: { label: 'Pendente', variant: 'secondary' as const },
-  PROCESSED: { label: 'Processado', variant: 'default' as const },
-  ERROR: { label: 'Erro', variant: 'destructive' as const },
 };
 
 export function DocumentPreviewModal({
@@ -209,25 +203,20 @@ export function DocumentPreviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <File className="h-5 w-5" />
-              {document?.title || 'Carregando...'}
-            </span>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col gap-0 p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
+          <DialogTitle className="flex items-center gap-2">
+            <File className="h-5 w-5" />
+            {document?.title || 'Carregando...'}
           </DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12 px-6">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : document ? (
-          <div className="space-y-6">
+          <div className="overflow-y-auto px-6 py-6 space-y-6">
             {/* Document Preview */}
             <div className="border rounded-lg overflow-hidden bg-muted/10">
               {isPDF && previewUrl && (
@@ -271,12 +260,8 @@ export function DocumentPreviewModal({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Status</label>
-                <div className="mt-1">
-                  <Badge variant={statusConfig[document.status as keyof typeof statusConfig]?.variant || 'secondary'}>
-                    {statusConfig[document.status as keyof typeof statusConfig]?.label || document.status}
-                  </Badge>
-                </div>
+                <label className="text-sm font-medium text-muted-foreground">Tamanho do Arquivo</label>
+                <p className="mt-1">{formatFileSize(document.fileSize)}</p>
               </div>
 
               <div>
@@ -289,37 +274,35 @@ export function DocumentPreviewModal({
                 <p className="mt-1">{new Date(document.createdAt).toLocaleDateString('pt-BR')}</p>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Tamanho do Arquivo</label>
-                <p className="mt-1">{formatFileSize(document.fileSize)}</p>
-              </div>
-
-              <div>
+              <div className="md:col-span-2">
                 <label className="text-sm font-medium text-muted-foreground">Enviado Por</label>
                 <p className="mt-1">{document.createdBy.name}</p>
               </div>
             </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-2 pt-4 border-t">
-              {onDelete && (
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowDeleteDialog(true)}
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Deletar
-                </Button>
-              )}
-              <Button onClick={handleDownload} disabled={isDownloading}>
-                {isDownloading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-            </div>
           </div>
         ) : null}
+
+        {/* Actions - Fixed Footer */}
+        {document && !isLoading && (
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t bg-muted/5">
+            {onDelete && (
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteDialog(true)}
+                disabled={isDeleting}
+                className="text-white"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Deletar
+              </Button>
+            )}
+            <Button onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Download className="h-4 w-4 mr-2" />
+              Download
+            </Button>
+          </div>
+        )}
       </DialogContent>
 
       <ConfirmDeleteDialog

@@ -242,7 +242,7 @@ export function UploadDocumentModal({ isOpen, onClose, onSuccess }: UploadDocume
           <div className="space-y-2">
             <Label htmlFor="client">Cliente *</Label>
             <Select value={selectedClient} onValueChange={setSelectedClient} disabled={isUploading}>
-              <SelectTrigger className={errors.client ? 'border-destructive' : ''}>
+              <SelectTrigger className={`!h-10 w-full ${errors.client ? 'border-destructive' : ''}`}>
                 <SelectValue placeholder="Selecione um cliente" />
               </SelectTrigger>
               <SelectContent>
@@ -268,7 +268,7 @@ export function UploadDocumentModal({ isOpen, onClose, onSuccess }: UploadDocume
           <div className="space-y-2">
             <Label htmlFor="type">Tipo de Documento *</Label>
             <Select value={documentType} onValueChange={setDocumentType} disabled={isUploading}>
-              <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
+              <SelectTrigger className={`!h-10 w-full ${errors.type ? 'border-destructive' : ''}`}>
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>

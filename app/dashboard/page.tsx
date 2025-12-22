@@ -7,6 +7,14 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { WelcomeModal } from '@/components/onboarding/welcome-modal';
 import { ClientUploadDocumentModal } from '@/components/documents/ClientUploadDocumentModal';
 import {
@@ -26,6 +34,8 @@ import {
   Mail,
   Crown,
   Clock,
+  ArrowRight,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
@@ -209,11 +219,11 @@ export default function DashboardPage() {
         />
 
         <DashboardLayout>
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Header */}
             <div>
               <h1 className="text-3xl font-bold">Portal do Cliente</h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mt-1">
                 Bem-vindo, {user.name}! Acompanhe seus documentos e pagamentos
               </p>
             </div>
@@ -221,46 +231,50 @@ export default function DashboardPage() {
             {/* Statistics Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Meus Documentos</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">Meus Documentos</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6 pt-0">
                   <div className="text-2xl font-bold">{clientStats?.documents.total ?? 0}</div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {clientStats?.documents.pendingRequests ?? 0} solicitações pendentes
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pagamentos</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <div className="text-2xl font-bold">{clientStats?.payments.total ?? 0}</div>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">Pagamentos</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  <div className="text-2xl font-bold">{clientStats?.payments.total ?? 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {clientStats?.payments.paid ?? 0} pagos, {clientStats?.payments.pending ?? 0} pendentes
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pagamentos Atrasados</CardTitle>
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">Pagamentos Atrasados</CardTitle>
+                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6 pt-0">
                   <div className="flex items-center gap-2">
                     <div className="text-2xl font-bold">{clientStats?.payments.overdue ?? 0}</div>
                     {clientStats && clientStats.payments.overdue > 0 && (
                       <Badge variant="destructive">Atenção</Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {clientStats && clientStats.payments.overdue > 0
                       ? 'Verifique seus pagamentos'
                       : 'Nenhum pagamento atrasado'}
@@ -269,106 +283,112 @@ export default function DashboardPage() {
               </Card>
 
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Itens Pendentes</CardTitle>
-                  <Bell className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">Itens Pendentes</CardTitle>
+                    <Bell className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6 pt-0">
                   <div className="flex items-center gap-2">
                     <div className="text-2xl font-bold">{clientStats?.pendingItems ?? 0}</div>
                     {clientStats && clientStats.pendingItems > 0 && (
-                      <Badge variant="warning">Atenção</Badge>
+                      <Badge variant="secondary">Atenção</Badge>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Documentos e recibos pendentes
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Quick Actions & Recent Activity */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              {/* Quick Actions */}
-              <Card className="col-span-4">
-                <CardHeader>
-                  <CardTitle>Ações Rápidas</CardTitle>
-                  <CardDescription>Acesse funções comuns rapidamente</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 md:grid-cols-2">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
+                <CardDescription>Acesse funções comuns rapidamente</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid gap-4 md:grid-cols-12">
+                  <div className="md:col-span-6">
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 h-auto py-4"
+                      className="justify-start gap-3 h-auto py-4 w-full"
                       onClick={() => router.push('/dashboard/documents')}
                     >
-                      <Eye className="h-5 w-5" />
-                      <div className="text-left">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Eye className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left flex-1">
                         <div className="font-medium">Ver Documentos</div>
                         <div className="text-xs text-muted-foreground">
                           Acessar meus documentos
                         </div>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </Button>
+                  </div>
+
+                  <div className="md:col-span-6">
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 h-auto py-4"
+                      className="justify-start gap-3 h-auto py-4 w-full"
                       onClick={() => router.push('/dashboard/payments')}
                     >
-                      <CreditCard className="h-5 w-5" />
-                      <div className="text-left">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left flex-1">
                         <div className="font-medium">Ver Pagamentos</div>
                         <div className="text-xs text-muted-foreground">
                           Consultar pagamentos
                         </div>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </Button>
+                  </div>
+
+                  <div className="md:col-span-6">
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 h-auto py-4"
+                      className="justify-start gap-3 h-auto py-4 w-full"
                       onClick={() => setShowUploadModal(true)}
                     >
-                      <Upload className="h-5 w-5" />
-                      <div className="text-left">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Upload className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left flex-1">
                         <div className="font-medium">Enviar Documento</div>
                         <div className="text-xs text-muted-foreground">
                           Upload de arquivos
                         </div>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </Button>
+                  </div>
+
+                  <div className="md:col-span-6">
                     <Button
                       variant="outline"
-                      className="justify-start gap-2 h-auto py-4"
+                      className="justify-start gap-3 h-auto py-4 w-full"
                       onClick={() => toast.info('Funcionalidade em breve')}
                     >
-                      <Mail className="h-5 w-5" />
-                      <div className="text-left">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Mail className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-left flex-1">
                         <div className="font-medium">Contatar Contador</div>
                         <div className="text-xs text-muted-foreground">
                           Enviar mensagem
                         </div>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Recent Activity Placeholder */}
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle>Atividade Recente</CardTitle>
-                  <CardDescription>Suas últimas atividades</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <Bell className="h-12 w-12 text-muted-foreground mb-4" />
-                    <p className="text-sm text-muted-foreground">
-                      Funcionalidade em desenvolvimento
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Pending Document Requests */}
             {documentRequests.length > 0 && (
@@ -379,60 +399,82 @@ export default function DashboardPage() {
                       <CardTitle>Documentos Solicitados</CardTitle>
                       <CardDescription>Seu contador solicitou os seguintes documentos</CardDescription>
                     </div>
-                    <Badge variant="warning" className="gap-1">
+                    <Badge variant="secondary" className="gap-1">
                       <AlertCircle className="h-3 w-3" />
                       {documentRequests.length} {documentRequests.length === 1 ? 'pendente' : 'pendentes'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   {isLoadingRequests ? (
                     <div className="flex items-center justify-center py-12">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      {documentRequests.map((request) => {
-                        const isOverdue = new Date(request.dueDate) < new Date();
-                        return (
-                          <div
-                            key={request.id}
-                            className="flex items-start justify-between rounded-lg border p-4 hover:bg-muted/50 transition-colors"
-                          >
-                            <div className="flex items-start gap-4 flex-1">
-                              <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
-                              <div className="flex-1 space-y-2">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12"></TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead>Prazo</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {documentRequests.map((request) => {
+                          const isOverdue = new Date(request.dueDate) < new Date();
+                          const daysUntilDue = differenceInDays(new Date(request.dueDate), new Date());
+
+                          return (
+                            <TableRow key={request.id}>
+                              <TableCell>
+                                <FileText className="h-5 w-5 text-muted-foreground" />
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {documentTypeLabels[request.type] || request.type}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-sm">{request.description}</span>
+                              </TableCell>
+                              <TableCell>
                                 <div className="flex items-center gap-2">
-                                  <Badge variant="outline">
-                                    {documentTypeLabels[request.type] || request.type}
-                                  </Badge>
                                   {isOverdue && (
-                                    <Badge variant="destructive" className="gap-1">
-                                      <AlertCircle className="h-3 w-3" />
-                                      Atrasado
-                                    </Badge>
+                                    <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0" />
                                   )}
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-sm">
+                                      {format(new Date(request.dueDate), 'dd/MM/yyyy', { locale: ptBR })}
+                                    </span>
+                                    {isOverdue ? (
+                                      <Badge variant="destructive" className="w-fit">
+                                        Atrasado
+                                      </Badge>
+                                    ) : daysUntilDue <= 3 && (
+                                      <span className="text-xs text-muted-foreground">
+                                        {daysUntilDue} {daysUntilDue === 1 ? 'dia' : 'dias'} restante{daysUntilDue !== 1 ? 's' : ''}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                <p className="text-sm">{request.description}</p>
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    Prazo: {format(new Date(request.dueDate), 'PPP', { locale: ptBR })}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                            <Button
-                              onClick={() => handleUploadDocument(request)}
-                              className="gap-2"
-                            >
-                              <Upload className="h-4 w-4" />
-                              Enviar Documento
-                            </Button>
-                          </div>
-                        );
-                      })}
-                    </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  onClick={() => handleUploadDocument(request)}
+                                  size="sm"
+                                  className="gap-2"
+                                >
+                                  <Upload className="h-4 w-4" />
+                                  Enviar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
                   )}
                 </CardContent>
               </Card>
@@ -444,24 +486,26 @@ export default function DashboardPage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>Pagamentos Sem Recibo</CardTitle>
-                      <CardDescription>Envie os comprovantes de pagamento</CardDescription>
+                      <CardTitle>Pagamentos Sem Comprovante</CardTitle>
+                      <CardDescription>Envie os comprovantes de pagamento para manter tudo em dia</CardDescription>
                     </div>
-                    <Badge variant="warning" className="gap-1">
+                    <Badge variant="secondary" className="gap-1">
                       <Receipt className="h-3 w-3" />
                       {clientStats.payments.withoutReceipt} {clientStats.payments.withoutReceipt === 1 ? 'pendente' : 'pendentes'}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col items-center justify-center py-8 text-center gap-4">
-                    <Receipt className="h-12 w-12 text-muted-foreground" />
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center justify-center py-12 text-center gap-4">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                      <Receipt className="h-8 w-8 text-primary" />
+                    </div>
                     <div>
                       <h3 className="text-lg font-semibold mb-2">
                         {clientStats.payments.withoutReceipt} {clientStats.payments.withoutReceipt === 1 ? 'pagamento precisa' : 'pagamentos precisam'} de comprovante
                       </h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Acesse a página de pagamentos para enviar os recibos
+                        Acesse a página de pagamentos para enviar os comprovantes
                       </p>
                       <Button
                         onClick={() => router.push('/dashboard/payments')}
@@ -471,6 +515,23 @@ export default function DashboardPage() {
                         Ver Pagamentos
                       </Button>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Empty State - No pending items */}
+            {documentRequests.length === 0 && (!clientStats || clientStats.payments.withoutReceipt === 0) && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 mb-4">
+                      <CheckCircle2 className="h-8 w-8 text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">Tudo em dia!</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Você não tem nenhuma pendência no momento
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -577,7 +638,7 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="flex items-center gap-2">
                   <div className="text-2xl font-bold">5</div>
-                  <Badge variant="warning">Atenção</Badge>
+                  <Badge variant="secondary">Atenção</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Aguardando análise
@@ -736,7 +797,7 @@ export default function DashboardPage() {
                   <CardTitle>Itens Pendentes</CardTitle>
                   <CardDescription>Requerem sua atenção</CardDescription>
                 </div>
-                <Badge variant="warning" className="gap-1">
+                <Badge variant="secondary" className="gap-1">
                   <AlertCircle className="h-3 w-3" />
                   5 itens
                 </Badge>

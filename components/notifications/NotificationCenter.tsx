@@ -15,6 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuthStore } from '@/store/auth.store';
 
 interface Notification {
   id: string;
@@ -42,22 +43,29 @@ const notificationColors = {
 
 export function NotificationCenter() {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Determine API endpoints based on user role
+  const isAccountant = user?.role === 'ACCOUNTANT';
+  const endpointPrefix = isAccountant ? '/notifications/accountant' : '/notifications';
+
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/me`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpointPrefix}/me`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.slice(0, 10)); // Show only last 10 notifications
+        const result = await response.json();
+        // Handle both paginated response (accountant) and array response (client)
+        const data = result.data || result;
+        setNotifications(Array.isArray(data) ? data.slice(0, 10) : data.slice(0, 10));
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -66,7 +74,7 @@ export function NotificationCenter() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/unread-count`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpointPrefix}/unread-count`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -85,7 +93,11 @@ export function NotificationCenter() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/read`, {
+      const endpoint = isAccountant
+        ? `${process.env.NEXT_PUBLIC_API_URL}/notifications/accountant/${notificationId}/read`
+        : `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notificationId}/read`;
+
+      const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -106,7 +118,7 @@ export function NotificationCenter() {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/mark-all-read`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpointPrefix}/mark-all-read`, {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
@@ -237,7 +249,10 @@ export function NotificationCenter() {
                   className="justify-center text-sm text-primary cursor-pointer"
                   onClick={() => {
                     setIsOpen(false);
-                    router.push('/client-portal/notifications');
+                    const allNotificationsRoute = isAccountant
+                      ? '/dashboard/notifications'
+                      : '/client-portal/notifications';
+                    router.push(allNotificationsRoute);
                   }}
                 >
                   Ver todas as notificações
