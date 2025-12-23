@@ -404,7 +404,7 @@ export function RecordPaymentModal({
               }}
               disabled={isLoadingClients || isEditMode || !!propsClientId}
             >
-              <SelectTrigger id="client" className={errors.clientId ? 'border-destructive' : ''}>
+              <SelectTrigger id="client" className={cn('w-full', errors.clientId ? 'border-destructive' : '')}>
                 <SelectValue placeholder={isLoadingClients ? 'Carregando...' : 'Selecione um cliente'} />
               </SelectTrigger>
               <SelectContent>
@@ -439,7 +439,7 @@ export function RecordPaymentModal({
                   setErrors({ ...errors, title: '' });
                 }
               }}
-              className={errors.title ? 'border-destructive' : ''}
+              className={cn('w-full', errors.title ? 'border-destructive' : '')}
               placeholder="Ex: Honorarios Mensais, Mensalidade Dez/2024"
             />
             {errors.title && (
@@ -458,7 +458,7 @@ export function RecordPaymentModal({
                 id="amount"
                 value={amount}
                 onChange={handleAmountChange}
-                className={cn('pl-10', errors.amount ? 'border-destructive' : '')}
+                className={cn('w-full pl-10', errors.amount ? 'border-destructive' : '')}
                 placeholder="0,00"
               />
             </div>
@@ -559,7 +559,7 @@ export function RecordPaymentModal({
           <div className="space-y-2">
             <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
             <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectTrigger id="paymentMethod">
+              <SelectTrigger id="paymentMethod" className="w-full">
                 <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
               <SelectContent>
@@ -580,6 +580,7 @@ export function RecordPaymentModal({
               id="reference"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
+              className="w-full"
               placeholder="Ex: Mensalidade Dez/2024"
             />
             <p className="text-xs text-muted-foreground">Opcional</p>
@@ -592,6 +593,7 @@ export function RecordPaymentModal({
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              className="w-full"
               placeholder="Observações adicionais sobre o pagamento"
               rows={3}
             />
@@ -632,7 +634,7 @@ export function RecordPaymentModal({
                   >
                     <SelectTrigger
                       id="recurringFrequency"
-                      className={errors.recurringFrequency ? 'border-destructive' : ''}
+                      className={cn('w-full', errors.recurringFrequency ? 'border-destructive' : '')}
                     >
                       <SelectValue placeholder="Selecione a frequência" />
                     </SelectTrigger>
@@ -666,7 +668,7 @@ export function RecordPaymentModal({
                         setErrors({ ...errors, recurringDayOfMonth: '' });
                       }
                     }}
-                    className={errors.recurringDayOfMonth ? 'border-destructive' : ''}
+                    className={cn('w-full', errors.recurringDayOfMonth ? 'border-destructive' : '')}
                     placeholder="Ex: 5"
                   />
                   {errors.recurringDayOfMonth && (
