@@ -54,6 +54,7 @@ import { RecordPaymentModal } from '@/components/payments/RecordPaymentModal';
 import { AccountantPaymentsTable } from '@/components/payments/AccountantPaymentsTable';
 import { PaymentDetailModal } from '@/components/payments/PaymentDetailModal';
 import { ConfirmDeletePaymentDialog } from '@/components/payments/ConfirmDeletePaymentDialog';
+import { AttachDocumentModal } from '@/components/payments/AttachDocumentModal';
 import { DocumentFolderCard } from '@/components/documents/DocumentFolderCard';
 import DocumentManager from '@/components/documents/DocumentManager';
 import { usePaymentsByClient, type Payment } from '@/hooks/usePayments';
@@ -102,6 +103,7 @@ export default function ClientDetailPage() {
   const [showPaymentDetailModal, setShowPaymentDetailModal] = useState(false);
   const [showDeletePaymentDialog, setShowDeletePaymentDialog] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [showAttachDocumentModal, setShowAttachDocumentModal] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
   const [paymentPage, setPaymentPage] = useState(1);
 
@@ -349,6 +351,55 @@ export default function ClientDetailPage() {
       return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
     }
     return value;
+  };
+
+  const handleAttachDocument = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setShowAttachDocumentModal(true);
+  };
+
+  const handleApprovePayment = async (payment: Payment) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao aprovar pagamento');
+      }
+
+      toast.success('Pagamento aprovado com sucesso!');
+      refreshPayments();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao aprovar pagamento');
+    }
+  };
+
+  const handleChargePayment = async (payment: Payment) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/charge`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao enviar cobrança');
+      }
+
+      const data = await response.json();
+      toast.success(data.message || 'Cobrança enviada com sucesso!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao enviar cobrança');
+    }
   };
 
   if (isLoading) {
@@ -604,6 +655,9 @@ export default function ClientDetailPage() {
                     setSelectedPayment(payment);
                     setShowDeletePaymentDialog(true);
                   }}
+                  onAttachDocument={handleAttachDocument}
+                  onApprove={handleApprovePayment}
+                  onCharge={handleChargePayment}
                 />
 
                 {/* Pagination */}
@@ -897,6 +951,21 @@ export default function ClientDetailPage() {
           onSuccess={() => {
             fetchClient();
             refreshPayments();
+          }}
+          payment={selectedPayment}
+        />
+
+        {/* Attach Document Modal */}
+        <AttachDocumentModal
+          isOpen={showAttachDocumentModal}
+          onClose={() => {
+            setShowAttachDocumentModal(false);
+            setSelectedPayment(null);
+          }}
+          onSuccess={() => {
+            refreshPayments();
+            setShowAttachDocumentModal(false);
+            setSelectedPayment(null);
           }}
           payment={selectedPayment}
         />

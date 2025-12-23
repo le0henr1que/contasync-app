@@ -39,6 +39,7 @@ import {
   MoreVertical,
   Edit,
   Trash2,
+  Bell,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -53,6 +54,8 @@ interface AccountantPaymentsTableProps {
   onAttachDocument?: (payment: Payment) => void;
   onDetachDocument?: (payment: Payment, documentId: string) => void;
   onMarkAsPaid?: (payment: Payment) => void;
+  onApprove?: (payment: Payment) => void;
+  onCharge?: (payment: Payment) => void;
   isLoading?: boolean;
   showClientColumn?: boolean;
 }
@@ -110,6 +113,8 @@ export function AccountantPaymentsTable({
   onAttachDocument,
   onDetachDocument,
   onMarkAsPaid,
+  onApprove,
+  onCharge,
   isLoading,
   showClientColumn = false,
 }: AccountantPaymentsTableProps) {
@@ -372,6 +377,45 @@ export function AccountantPaymentsTable({
                         </DropdownMenuItem>
                       )}
 
+                      {onAttachDocument && (payment.status === 'AWAITING_INVOICE' || payment.status === 'OVERDUE') && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => onAttachDocument(payment)}
+                            className="text-blue-600"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Anexar Nota Fiscal
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+
+                      {onApprove && payment.status === 'AWAITING_VALIDATION' && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => onApprove(payment)}
+                            className="text-green-600"
+                          >
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Aprovar Pagamento
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+
+                      {onCharge && payment.clientId && payment.status !== 'PAID' && payment.status !== 'CANCELED' && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => onCharge(payment)}
+                            className="text-orange-600"
+                          >
+                            <Bell className="mr-2 h-4 w-4" />
+                            Cobrar Pagamento
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                        </>
+                      )}
+
                       {onEdit && (
                         <DropdownMenuItem onClick={() => onEdit(payment)}>
                           <Edit className="mr-2 h-4 w-4" />
@@ -379,23 +423,7 @@ export function AccountantPaymentsTable({
                         </DropdownMenuItem>
                       )}
 
-                      {onAttachDocument && (
-                        <DropdownMenuItem onClick={() => onAttachDocument(payment)}>
-                          <LinkIcon className="mr-2 h-4 w-4" />
-                          Anexar Documento
-                        </DropdownMenuItem>
-                      )}
-
-                      {onMarkAsPaid && canMarkAsPaid && (
-                        <DropdownMenuItem onClick={() => onMarkAsPaid(payment)}>
-                          <Check className="mr-2 h-4 w-4" />
-                          Marcar como Pago
-                        </DropdownMenuItem>
-                      )}
-
-                      {(onEdit || onDelete) && (onViewDetails || onAttachDocument || onMarkAsPaid) && (
-                        <DropdownMenuSeparator />
-                      )}
+                      <DropdownMenuSeparator />
 
                       {onDelete && (
                         <DropdownMenuItem
