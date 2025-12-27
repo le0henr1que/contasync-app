@@ -3,6 +3,7 @@
 import { Sidebar } from './Sidebar';
 import { MobileNav } from './MobileNav';
 import { NotificationCenter } from '@/components/notifications/NotificationCenter';
+import { FeedbackWidget } from '@/components/feedback/feedback-widget';
 import { useAuthStore } from '@/store/auth.store';
 
 interface DashboardLayoutProps {
@@ -36,6 +37,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </main>
       </div>
+
+      {/* Feedback Widget - Available for all authenticated users */}
+      <FeedbackWidget />
     </div>
   );
 }
