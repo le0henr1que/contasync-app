@@ -6,20 +6,35 @@ import { ClientPortalMobileNav } from './ClientPortalMobileNav';
 interface ClientPortalLayoutProps {
   children: React.ReactNode;
   expenseModuleEnabled: boolean;
+  financialModuleEnabled: boolean;
+  isIndividualClient?: boolean;
 }
 
-export function ClientPortalLayout({ children, expenseModuleEnabled }: ClientPortalLayoutProps) {
+export function ClientPortalLayout({
+  children,
+  expenseModuleEnabled,
+  financialModuleEnabled,
+  isIndividualClient = false
+}: ClientPortalLayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block">
-        <ClientPortalSidebar expenseModuleEnabled={expenseModuleEnabled} />
+        <ClientPortalSidebar
+          expenseModuleEnabled={expenseModuleEnabled}
+          financialModuleEnabled={financialModuleEnabled}
+          isIndividualClient={isIndividualClient}
+        />
       </aside>
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile Header */}
-        <ClientPortalMobileNav expenseModuleEnabled={expenseModuleEnabled} />
+        <ClientPortalMobileNav
+          expenseModuleEnabled={expenseModuleEnabled}
+          financialModuleEnabled={financialModuleEnabled}
+          isIndividualClient={isIndividualClient}
+        />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto bg-muted/30">

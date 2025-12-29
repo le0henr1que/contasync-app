@@ -2,74 +2,82 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
-
-const plans = [
-  {
-    name: 'Starter',
-    slug: 'individual-starter',
-    price: 29.9,
-    description: 'Ideal para freelancers',
-    features: ['Até 50 pagamentos/mês', 'Até 100 despesas/mês', '20 documentos', 'Suporte por email'],
-  },
-  {
-    name: 'Professional',
-    slug: 'individual-professional',
-    price: 59.9,
-    description: 'Para profissionais avançados',
-    features: ['Pagamentos ilimitados', 'Despesas ilimitadas', 'Documentos ilimitados', 'Suporte prioritário'],
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    slug: 'firm-enterprise',
-    price: 699.9,
-    description: 'Para grandes escritórios',
-    features: ['Tudo do Professional', 'White label', 'Acesso à API', 'Suporte dedicado'],
-  },
-];
+import { FadeIn } from '@/components/ui/fade-in';
 
 export function PricingPreview() {
+  const plans = [
+    {
+      name: 'Starter',
+      price: 'R$ 29,90',
+      period: '/mês',
+      features: ['Até 50 clientes', '100 GB armazenamento', 'Suporte por email'],
+    },
+    {
+      name: 'Professional',
+      price: 'R$ 59,90',
+      period: '/mês',
+      popular: true,
+      features: ['Até 200 clientes', '500 GB armazenamento', 'Suporte prioritário', 'API Access'],
+    },
+    {
+      name: 'Enterprise',
+      price: 'Personalizado',
+      features: ['Clientes ilimitados', 'Armazenamento ilimitado', 'Suporte dedicado', 'White-label'],
+    },
+  ];
+
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-20 bg-secondary/50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Planos Simples e Transparentes</h2>
-          <p className="text-xl text-muted-foreground">Escolha o plano ideal para você</p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Planos para todos os tamanhos
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            14 dias grátis em todos os planos. Sem cartão de crédito.
+          </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
-            <Card key={index} className={`p-8 ${plan.popular ? 'border-primary shadow-xl scale-105' : ''}`}>
-              {plan.popular && (
-                <div className="bg-primary text-primary-foreground text-sm font-semibold px-3 py-1 rounded-full w-fit mb-4">
-                  Mais Popular
-                </div>
-              )}
-              <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-              <p className="text-muted-foreground mb-4">{plan.description}</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold">R$ {plan.price.toFixed(2)}</span>
-                <span className="text-muted-foreground">/mês</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button className="w-full" variant={plan.popular ? 'default' : 'outline'} asChild>
-                <Link href={`/signup?plan=${plan.slug}`}>Começar Trial</Link>
-              </Button>
-            </Card>
+            <FadeIn key={index} delay={index * 0.15} direction="up">
+              <Card className={plan.popular ? 'border-primary shadow-lg' : ''}>
+                {plan.popular && (
+                  <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium">
+                    Mais Popular
+                  </div>
+                )}
+                <CardHeader>
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
+                  <div className="mt-4">
+                    <span className="text-3xl font-bold">{plan.price}</span>
+                    {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-2">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full" variant={plan.popular ? 'default' : 'outline'} asChild>
+                    <Link href="/signup">{index === 2 ? 'Contato' : 'Começar Trial'}</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
           ))}
         </div>
+
         <div className="text-center mt-8">
-          <Button variant="link" asChild>
-            <Link href="/pricing">Ver todos os planos →</Link>
-          </Button>
+          <Link href="/pricing">
+            <Button variant="link">Ver comparação completa de planos →</Button>
+          </Link>
         </div>
       </div>
     </section>

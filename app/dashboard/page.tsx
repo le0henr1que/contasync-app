@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { WelcomeModal } from '@/components/onboarding/welcome-modal';
 import { ClientUploadDocumentModal } from '@/components/documents/ClientUploadDocumentModal';
+import { TrialBanner } from '@/components/dashboard/TrialBanner';
 import {
   Users,
   FileText,
@@ -564,51 +565,11 @@ export default function DashboardPage() {
           </div>
 
           {/* Trial Status Banner */}
-          {user.subscriptionStatus === 'TRIALING' && user.subscription && (
-            <Card className="border-primary bg-gradient-to-r from-primary/5 to-primary/10">
-              <CardHeader>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                      <Crown className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">
-                        Período de Avaliação - {user.subscription.plan?.name || 'Plano Starter'}
-                      </CardTitle>
-                      <CardDescription className="mt-1.5">
-                        {user.trialEndsAt && (() => {
-                          const daysLeft = differenceInDays(new Date(user.trialEndsAt), new Date());
-                          return (
-                            <span className="flex items-center gap-2 text-base">
-                              <Clock className="h-4 w-4" />
-                              {daysLeft > 0
-                                ? `${daysLeft} ${daysLeft === 1 ? 'dia restante' : 'dias restantes'} até ${format(new Date(user.trialEndsAt), 'dd/MM/yyyy', { locale: ptBR })}`
-                                : 'Período de avaliação expirado'
-                              }
-                            </span>
-                          );
-                        })()}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => router.push('/dashboard/billing')}
-                    variant="default"
-                    className="gap-2"
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    Gerenciar Plano
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Você está usando o plano {user.subscription.plan?.name || 'Starter'} gratuitamente.
-                  Explore todas as funcionalidades e escolha o melhor plano para seu escritório antes do fim do período de avaliação.
-                </p>
-              </CardContent>
-            </Card>
+          {user.subscriptionStatus === 'TRIALING' && user.trialEndsAt && (
+            <TrialBanner
+              trialEndsAt={user.trialEndsAt}
+              planName={user.subscription?.plan?.name}
+            />
           )}
 
           {/* Stats Cards */}

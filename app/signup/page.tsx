@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
+import { trackSignupStart, trackSignupComplete } from '@/lib/analytics';
 
 function SignupContent() {
   const router = useRouter();
@@ -31,12 +32,15 @@ function SignupContent() {
   // Read query param and save to localStorage on mount
   useEffect(() => {
     const planParam = searchParams.get('plan');
+    let determinedTenantType: 'INDIVIDUAL' | 'ACCOUNTANT_FIRM' = 'INDIVIDUAL';
+
     if (planParam) {
       setSelectedPlan(planParam);
       localStorage.setItem('selectedPlan', planParam);
 
       // Determine tenant type from plan slug
       if (planParam.includes('firm') || planParam.includes('enterprise')) {
+        determinedTenantType = 'ACCOUNTANT_FIRM';
         setTenantType('ACCOUNTANT_FIRM');
       } else {
         setTenantType('INDIVIDUAL');
@@ -48,6 +52,9 @@ function SignupContent() {
         setSelectedPlan(storedPlan);
       }
     }
+
+    // Track signup page visit
+    trackSignupStart(determinedTenantType, planParam || undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,6 +95,9 @@ function SignupContent() {
 
       // Save access token to localStorage
       localStorage.setItem('accessToken', data.accessToken);
+
+      // Track successful signup
+      trackSignupComplete(tenantType, selectedPlan || undefined, data.userId || data.id);
 
       // Clear selected plan from localStorage after successful signup
       localStorage.removeItem('selectedPlan');

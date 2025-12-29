@@ -20,6 +20,8 @@ import {
   User,
   LogOut,
   Menu,
+  Wallet,
+  CreditCard,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 import { useRouter } from 'next/navigation';
@@ -28,9 +30,15 @@ import { authService } from '@/services/auth.service';
 
 interface ClientPortalMobileNavProps {
   expenseModuleEnabled: boolean;
+  financialModuleEnabled: boolean;
+  isIndividualClient?: boolean;
 }
 
-export function ClientPortalMobileNav({ expenseModuleEnabled }: ClientPortalMobileNavProps) {
+export function ClientPortalMobileNav({
+  expenseModuleEnabled,
+  financialModuleEnabled,
+  isIndividualClient = false
+}: ClientPortalMobileNavProps) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const router = useRouter();
@@ -38,9 +46,20 @@ export function ClientPortalMobileNav({ expenseModuleEnabled }: ClientPortalMobi
 
   const navigation = [
     { name: 'Dashboard', href: '/client-portal', icon: Home },
-    { name: 'Documentos', href: '/client-portal/documents', icon: FileText },
-    { name: 'Pagamentos', href: '/client-portal/payments', icon: Receipt },
-    ...(expenseModuleEnabled ? [{ name: 'Despesas', href: '/client-portal/expenses', icon: TrendingUp }] : []),
+    // Módulos de Contabilidade (apenas para clientes gerenciados por contador)
+    ...(expenseModuleEnabled ? [
+      { name: 'Documentos', href: '/client-portal/documents', icon: FileText },
+      { name: 'Pagamentos', href: '/client-portal/payments', icon: Receipt },
+      { name: 'Despesas', href: '/client-portal/expenses', icon: TrendingUp }
+    ] : []),
+    // Módulo Financeiro (para clientes individuais)
+    ...(financialModuleEnabled ? [
+      { name: 'Financeiro', href: '/client-portal/financeiro', icon: Wallet }
+    ] : []),
+    // Assinatura (apenas para clientes individuais)
+    ...(isIndividualClient ? [
+      { name: 'Assinatura', href: '/client-portal/subscription', icon: CreditCard }
+    ] : []),
     { name: 'Perfil', href: '/client-portal/profile', icon: User },
   ];
 

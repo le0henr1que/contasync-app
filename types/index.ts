@@ -54,6 +54,7 @@ export interface User {
   accountantId?: string;
   clientId?: string;
   expenseModuleEnabled?: boolean;
+  financialModuleEnabled?: boolean;
   onboardingCompleted?: boolean;
   subscriptionStatus?: SubscriptionStatus;
   subscription?: Subscription;

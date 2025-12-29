@@ -7,6 +7,7 @@ import { IntervalToggle } from '@/components/pricing/IntervalToggle';
 import { PricingCard } from '@/components/pricing/PricingCard';
 import { Footer } from '@/components/landing/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FadeIn } from '@/components/ui/fade-in';
 
 interface Plan {
   id: string;
@@ -222,8 +223,10 @@ export default function PricingPage() {
                 </div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
-                  {plans.map((plan) => (
-                    <PricingCard key={plan.id} plan={plan} interval={interval} />
+                  {plans.map((plan, index) => (
+                    <FadeIn key={plan.id} delay={index * 0.1} direction="up">
+                      <PricingCard plan={plan} interval={interval} />
+                    </FadeIn>
                   ))}
                 </div>
               )}

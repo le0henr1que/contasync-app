@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Save, User, Mail, Phone } from 'lucide-react';
 import { toast } from 'sonner';
-import { PlanLimitsInfo } from '@/components/client-portal/PlanLimitsInfo';
+import { PlanLimitsInfo } from '../components/PlanLimitsInfo';
 
 interface ProfileData {
   user: {

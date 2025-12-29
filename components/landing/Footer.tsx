@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -9,9 +10,47 @@ export function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <h3 className="font-bold text-lg mb-4">ContaSync</h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               Gestão financeira simplificada para contadores e escritórios.
             </p>
+            <div className="flex gap-4">
+              <a
+                href="https://facebook.com/contasync"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Facebook"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a
+                href="https://twitter.com/contasync"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Twitter"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a
+                href="https://linkedin.com/company/contasync"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
+              <a
+                href="https://instagram.com/contasync"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+            </div>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Produto</h4>

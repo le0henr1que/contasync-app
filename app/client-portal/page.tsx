@@ -22,6 +22,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import Link from 'next/link';
+import { AccountantPlanWidget } from './components/AccountantPlanWidget';
 
 interface ClientProfile {
   id: string;
@@ -209,6 +210,13 @@ export default function ClientPortalPage() {
               </CardContent>
             </Card>
           )}
+        </div>
+
+        {/* Accountant Plan Widget */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="md:col-span-1">
+            <AccountantPlanWidget />
+          </div>
         </div>
 
         {/* Pending Items Alert */}

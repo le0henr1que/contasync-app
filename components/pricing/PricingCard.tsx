@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import Link from 'next/link';
+import { trackCTAClick } from '@/lib/analytics';
 
 interface Plan {
   id: string;
@@ -89,8 +90,8 @@ export function PricingCard({ plan, interval }: PricingCardProps) {
 
   return (
     <Card
-      className={`p-8 relative ${
-        isPopular ? 'border-primary shadow-xl scale-105 z-10' : ''
+      className={`p-8 relative transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${
+        isPopular ? 'border-primary shadow-xl scale-105 z-10' : 'hover:border-primary/50'
       }`}
     >
       {isPopular && (
@@ -145,8 +146,9 @@ export function PricingCard({ plan, interval }: PricingCardProps) {
         variant={isPopular ? 'default' : 'outline'}
         size="lg"
         asChild
+        onClick={() => trackCTAClick('pricing_card', isTrial ? '/signup' : '/checkout', plan.slug)}
       >
-        <Link href={`/signup?plan=${plan.slug}`}>
+        <Link href={isTrial ? `/signup?plan=${plan.slug}` : `/checkout/${plan.slug}`}>
           {isTrial ? 'Começar Trial Gratuito' : 'Assinar Agora'}
         </Link>
       </Button>
