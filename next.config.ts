@@ -1,12 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Desabilitar checagem de TypeScript e ESLint durante o build para Vercel
+  // Desabilitar checagem de TypeScript durante o build para Vercel
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
   images: {
     // Permitir imagens de domínios externos
