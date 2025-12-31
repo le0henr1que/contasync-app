@@ -25,6 +25,7 @@ import {
   History,
   Sparkles,
   BarChart3,
+  PieChart,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -66,6 +67,7 @@ const clientNavigation: NavItem[] = [
       { name: 'Parcelamentos', href: '/client-portal/financeiro/parcelamentos', icon: CreditCard },
       { name: 'Investimentos', href: '/client-portal/financeiro/investimentos', icon: TrendingUp },
       { name: 'Metas', href: '/client-portal/financeiro/metas', icon: Target },
+      { name: 'Distribuição', href: '/client-portal/financeiro/distribuicao', icon: PieChart },
       { name: 'Métricas', href: '/client-portal/financeiro/metricas', icon: BarChart3 },
       { name: 'Histórico', href: '/client-portal/financeiro/historico', icon: History },
       { name: 'IA Financeira', href: '/client-portal/financeiro/ia', icon: Sparkles },
