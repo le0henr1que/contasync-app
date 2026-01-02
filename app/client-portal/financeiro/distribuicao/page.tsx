@@ -52,7 +52,7 @@ export default function DistributionPage() {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/financial/distribution/config', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/config`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await res.json();
@@ -66,7 +66,7 @@ export default function DistributionPage() {
 
   const fetchMonthlyFixedCost = async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/financial/distribution/expenses/monthly', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/expenses/monthly`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       });
       const data = await res.json();
@@ -118,7 +118,7 @@ export default function DistributionPage() {
 
     try {
       setAddingCategory(true);
-      const res = await fetch('http://localhost:3000/api/financial/distribution/categories', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export default function DistributionPage() {
 
   const toggleCategory = async (id: string, currentStatus: boolean) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/financial/distribution/categories/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/categories/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +170,7 @@ export default function DistributionPage() {
 
   const deleteCategory = async (id: string) => {
     try {
-      await fetch(`http://localhost:3000/api/financial/distribution/categories/${id}`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/categories/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${getToken()}` },
       });
@@ -208,7 +208,7 @@ export default function DistributionPage() {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/financial/distribution/categories/${categoryId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/categories/${categoryId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -245,7 +245,7 @@ export default function DistributionPage() {
 
     try {
       setSimulating(true);
-      const res = await fetch('http://localhost:3000/api/financial/distribution/simulate', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/distribution/simulate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
