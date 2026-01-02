@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
 import {
   Card,
   CardContent,
@@ -10,6 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Target,
   TrendingUp,
@@ -24,6 +27,9 @@ import {
   ListTodo,
   Circle,
   CheckCircle,
+  Check,
+  X,
+  Edit2,
 } from 'lucide-react';
 
 export type GoalCategory =
@@ -97,6 +103,7 @@ interface GoalCardProps {
   onToggleItem?: (goalId: string, itemId: string) => void;
   onDeleteItem?: (goalId: string, itemId: string) => void;
   onUpdateProgress?: (goal: Goal) => void;
+  onUpdateItem?: (goalId: string, itemId: string, amount: number) => void;
 }
 
 const categoryLabels: Record<GoalCategory, string> = {
@@ -150,10 +157,37 @@ export function GoalCard({
   onToggleItem,
   onDeleteItem,
   onUpdateProgress,
+  onUpdateItem,
 }: GoalCardProps) {
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingAmount, setEditingAmount] = useState<number>(0);
+
   const progressPercentage = Math.min(goal.progress || 0, 100);
   const isNearTarget = progressPercentage >= 90 && progressPercentage < 100;
   const isUrgent = (goal.daysRemaining || 0) <= 30 && (goal.daysRemaining || 0) > 0;
+
+  const startEditingItem = (itemId: string, currentAmount: number) => {
+    setEditingItemId(itemId);
+    setEditingAmount(currentAmount);
+  };
+
+  const cancelEditingItem = () => {
+    setEditingItemId(null);
+    setEditingAmount(0);
+  };
+
+  const saveItemAmount = async (itemId: string) => {
+    if (editingAmount <= 0) {
+      toast.error('O valor deve ser maior que zero');
+      return;
+    }
+
+    if (onUpdateItem) {
+      onUpdateItem(goal.id, itemId, editingAmount);
+      setEditingItemId(null);
+      setEditingAmount(0);
+    }
+  };
 
   return (
     <Card
@@ -319,54 +353,117 @@ export function GoalCard({
             </div>
 
             <div className="space-y-1.5 max-h-40 overflow-y-auto">
-              {goal.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-2 p-2 rounded-md hover:bg-secondary/50 transition-colors group"
-                >
-                  <button
-                    onClick={() => onToggleItem?.(goal.id, item.id)}
-                    className="flex-shrink-0 transition-transform hover:scale-110"
+              {goal.items.map((item) => {
+                const isEditing = editingItemId === item.id;
+
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-2 p-2 rounded-md hover:bg-secondary/50 transition-colors group"
                   >
-                    {item.isPurchased ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <Circle className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </button>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p
-                        className={`text-sm truncate ${
-                          item.isPurchased
-                            ? 'line-through text-muted-foreground'
-                            : ''
-                        }`}
-                      >
-                        {item.title}
-                      </p>
-                      <span className={`text-sm font-medium whitespace-nowrap ${
-                        item.isPurchased ? 'text-muted-foreground' : 'text-primary'
-                      }`}>
-                        {formatCurrency(item.amount)}
-                      </span>
+                    <button
+                      onClick={() => onToggleItem?.(goal.id, item.id)}
+                      className="flex-shrink-0 transition-transform hover:scale-110"
+                      disabled={isEditing}
+                    >
+                      {item.isPurchased ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <Circle className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      {isEditing ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm truncate flex-1">
+                            {item.title}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">R$</span>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={editingAmount}
+                              onChange={(e) => setEditingAmount(Number(e.target.value))}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  saveItemAmount(item.id);
+                                } else if (e.key === 'Escape') {
+                                  cancelEditingItem();
+                                }
+                              }}
+                              className="w-24 h-7 text-sm"
+                              autoFocus
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => saveItemAmount(item.id)}
+                              title="Salvar (Enter)"
+                            >
+                              <Check className="h-3 w-3 text-green-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={cancelEditingItem}
+                              title="Cancelar (Esc)"
+                            >
+                              <X className="h-3 w-3 text-red-600" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between gap-2">
+                            <p
+                              className={`text-sm truncate ${
+                                item.isPurchased
+                                  ? 'line-through text-muted-foreground'
+                                  : ''
+                              }`}
+                            >
+                              {item.title}
+                            </p>
+                            <div className="flex items-center gap-1">
+                              <span className={`text-sm font-medium whitespace-nowrap ${
+                                item.isPurchased ? 'text-muted-foreground' : 'text-primary'
+                              }`}>
+                                {formatCurrency(item.amount)}
+                              </span>
+                              {onUpdateItem && !item.isPurchased && (
+                                <button
+                                  onClick={() => startEditingItem(item.id, Number(item.amount))}
+                                  className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Editar valor"
+                                >
+                                  <Edit2 className="h-3 w-3 text-blue-600" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          {item.description && (
+                            <p className="text-xs text-muted-foreground truncate">
+                              {item.description}
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
-                    {item.description && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {item.description}
-                      </p>
+                    {!isEditing && onDeleteItem && (
+                      <button
+                        onClick={() => onDeleteItem(goal.id, item.id)}
+                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </button>
                     )}
                   </div>
-                  {onDeleteItem && (
-                    <button
-                      onClick={() => onDeleteItem(goal.id, item.id)}
-                      className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-3 w-3 text-destructive" />
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

@@ -40,6 +40,12 @@ interface MetricsData {
     averageMonthlyExpense: number;
     expenseToIncomeRatio: number;
   };
+  monthlyExpenses?: {
+    recurringMonthly: number;
+    installmentsThisMonth: number;
+    total: number;
+    description: string;
+  };
   monthlyTrends: Array<{
     month: string;
     monthFull: string;
@@ -231,7 +237,29 @@ export default function MetricsPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Monthly Cost - Featured Card */}
+          <Card className="lg:col-span-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Custo Fixo Mensal
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-4xl font-bold text-primary mb-1">
+                    {metrics.monthlyExpenses ? formatCurrency(metrics.monthlyExpenses.total) : formatCurrency(0)}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recorrentes + Parcelas do mês
+                  </p>
+                </div>
+                <CreditCard className="h-10 w-10 text-primary opacity-30" />
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -270,27 +298,6 @@ export default function MetricsPage() {
                   </p>
                 </div>
                 <TrendingDown className="h-8 w-8 text-red-600 opacity-20" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Saldo Líquido
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className={`text-2xl font-bold ${metrics.summary.netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(metrics.summary.netBalance)}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    No período
-                  </p>
-                </div>
-                <DollarSign className="h-8 w-8 text-muted-foreground opacity-20" />
               </div>
             </CardContent>
           </Card>

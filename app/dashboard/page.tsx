@@ -18,6 +18,7 @@ import {
 import { WelcomeModal } from '@/components/onboarding/welcome-modal';
 import { ClientUploadDocumentModal } from '@/components/documents/ClientUploadDocumentModal';
 import { TrialBanner } from '@/components/dashboard/TrialBanner';
+import { MonthlyCostsCard } from '@/components/financial/MonthlyCostsCard';
 import {
   Users,
   FileText,
@@ -101,6 +102,7 @@ export default function DashboardPage() {
   const [clientStats, setClientStats] = useState<ClientStatistics | null>(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<DocumentRequest | null>(null);
+  const [monthlyCost, setMonthlyCost] = useState<number | null>(null);
 
   const fetchPaymentStatistics = useCallback(async () => {
     try {
@@ -137,6 +139,25 @@ export default function DashboardPage() {
       setClientStats(data);
     } catch (error: any) {
       console.error('Error fetching client statistics:', error);
+    }
+  }, []);
+
+  const fetchMonthlyCost = useCallback(async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/financial/monthly-costs?monthsAhead=1`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao carregar custo mensal');
+      }
+
+      const data = await response.json();
+      setMonthlyCost(data.currentMonth.total);
+    } catch (error: any) {
+      console.error('Error fetching monthly cost:', error);
     }
   }, []);
 
@@ -193,8 +214,9 @@ export default function DashboardPage() {
     } else if (user.role === 'CLIENT') {
       fetchClientStatistics();
       fetchDocumentRequests();
+      fetchMonthlyCost();
     }
-  }, [user, isLoading, fetchPaymentStatistics, fetchClientStatistics, fetchDocumentRequests, router]);
+  }, [user, isLoading, fetchPaymentStatistics, fetchClientStatistics, fetchDocumentRequests, fetchMonthlyCost, router]);
 
   if (isLoading) {
     return (
@@ -230,7 +252,36 @@ export default function DashboardPage() {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+              {/* Monthly Cost - Featured Card */}
+              <Card className="lg:col-span-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium">Custo Fixo Mensal</CardTitle>
+                    <DollarSign className="h-5 w-5 text-primary" />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                  {monthlyCost !== null ? (
+                    <>
+                      <div className="text-4xl font-bold text-primary">
+                        {new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                        }).format(monthlyCost)}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Recorrentes + Parcelas do mês
+                      </p>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -242,21 +293,6 @@ export default function DashboardPage() {
                   <div className="text-2xl font-bold">{clientStats?.documents.total ?? 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {clientStats?.documents.pendingRequests ?? 0} solicitações pendentes
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium">Pagamentos</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6 pt-0">
-                  <div className="text-2xl font-bold">{clientStats?.payments.total ?? 0}</div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {clientStats?.payments.paid ?? 0} pagos, {clientStats?.payments.pending ?? 0} pendentes
                   </p>
                 </CardContent>
               </Card>
@@ -303,6 +339,9 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Monthly Costs Card */}
+            <MonthlyCostsCard />
 
             {/* Quick Actions */}
             <Card>

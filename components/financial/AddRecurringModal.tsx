@@ -75,7 +75,9 @@ export function AddRecurringModal({
         ? parseFloat(editingPayment.amount)
         : editingPayment.amount;
       setAmount(numAmount.toString());
-      setDisplayAmount(formatCurrencyInput(numAmount.toString()));
+      // Format the amount for display (value is already in reais, need to convert to centavos format)
+      const amountInCents = Math.round(numAmount * 100).toString();
+      setDisplayAmount(formatCurrencyInput(amountInCents));
       setCategory(editingPayment.category);
       setFrequency(editingPayment.frequency);
       setDayOfMonth(editingPayment.dayOfMonth.toString());

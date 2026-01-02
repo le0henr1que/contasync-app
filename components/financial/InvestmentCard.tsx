@@ -32,9 +32,10 @@ export type InvestmentType =
 export interface InvestmentTransaction {
   id: string;
   investmentId: string;
-  type: 'BUY' | 'SELL';
-  quantity: string | number;
-  price: string | number;
+  type: 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAWAL';
+  quantity?: string | number;
+  price?: string | number;
+  amount?: string | number;
   fees?: string | number | null;
   date: string;
   notes?: string | null;
@@ -222,34 +223,47 @@ export function InvestmentCard({
             <p className="text-xs text-muted-foreground font-medium">
               Últimas Transações
             </p>
-            {investment.transactions.slice(0, 3).map((txn) => (
-              <div
-                key={txn.id}
-                className={`flex items-center justify-between text-xs p-2 rounded ${
-                  txn.type === 'BUY'
-                    ? 'bg-blue-50 dark:bg-blue-900/20'
-                    : 'bg-orange-50 dark:bg-orange-900/20'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {txn.type === 'BUY' ? (
-                    <Plus className="h-3 w-3 text-blue-600" />
-                  ) : (
-                    <Minus className="h-3 w-3 text-orange-600" />
-                  )}
-                  <span className="font-medium">{txn.type}</span>
-                  <span className="text-muted-foreground">
-                    {formatNumber(txn.quantity)}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {format(new Date(txn.date), 'dd/MM/yy')}
+            {investment.transactions.slice(0, 3).map((txn) => {
+              const isDeposit = txn.type === 'DEPOSIT';
+              const isWithdrawal = txn.type === 'WITHDRAWAL';
+              const isBuy = txn.type === 'BUY';
+              const isSavingsTransaction = isDeposit || isWithdrawal;
+
+              return (
+                <div
+                  key={txn.id}
+                  className={`flex items-center justify-between text-xs p-2 rounded ${
+                    isBuy || isDeposit
+                      ? 'bg-blue-50 dark:bg-blue-900/20'
+                      : 'bg-orange-50 dark:bg-orange-900/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {isBuy || isDeposit ? (
+                      <Plus className="h-3 w-3 text-blue-600" />
+                    ) : (
+                      <Minus className="h-3 w-3 text-orange-600" />
+                    )}
+                    <span className="font-medium">
+                      {isDeposit ? 'DEP' : isWithdrawal ? 'RET' : txn.type}
+                    </span>
+                    {!isSavingsTransaction && (
+                      <span className="text-muted-foreground">
+                        {formatNumber(txn.quantity || 0)}
+                      </span>
+                    )}
+                    <span className="text-muted-foreground">
+                      {format(new Date(txn.date), 'dd/MM/yy')}
+                    </span>
+                  </div>
+                  <span className="font-medium">
+                    {isSavingsTransaction
+                      ? formatCurrency(txn.amount || 0)
+                      : formatCurrency(txn.price || 0)}
                   </span>
                 </div>
-                <span className="font-medium">
-                  {formatCurrency(txn.price)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -271,7 +285,7 @@ export function InvestmentCard({
                 size="sm"
                 className="flex-1"
                 onClick={() => onWithdraw?.(investment)}
-                disabled={Number(investment.currentValue) <= 0}
+                disabled={Number(investment.totalValue) <= 0}
               >
                 <Minus className="h-3.5 w-3.5 mr-1.5" />
                 Retirar

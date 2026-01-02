@@ -111,7 +111,7 @@ export default function InvestmentsPage() {
   });
   const [showAddModal, setShowAddModal] = useState(false);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [transactionType, setTransactionType] = useState<'BUY' | 'SELL'>('BUY');
+  const [transactionType, setTransactionType] = useState<'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW'>('BUY');
   const [editingInvestment, setEditingInvestment] =
     useState<Investment | null>(null);
   const [deletingInvestment, setDeletingInvestment] =
@@ -219,6 +219,18 @@ export default function InvestmentsPage() {
   const handleSell = (investment: Investment) => {
     setTransactingInvestment(investment);
     setTransactionType('SELL');
+    setShowTransactionModal(true);
+  };
+
+  const handleDeposit = (investment: Investment) => {
+    setTransactingInvestment(investment);
+    setTransactionType('DEPOSIT');
+    setShowTransactionModal(true);
+  };
+
+  const handleWithdraw = (investment: Investment) => {
+    setTransactingInvestment(investment);
+    setTransactionType('WITHDRAW');
     setShowTransactionModal(true);
   };
 
@@ -436,6 +448,8 @@ export default function InvestmentsPage() {
                   onDelete={(i) => setDeletingInvestment(i)}
                   onBuy={handleBuy}
                   onSell={handleSell}
+                  onDeposit={handleDeposit}
+                  onWithdraw={handleWithdraw}
                 />
               ))}
             </div>

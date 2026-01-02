@@ -144,6 +144,29 @@ export default function GoalsPage() {
     }
   };
 
+  const handleUpdateItem = async (goalId: string, itemId: string, amount: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/financial/goals/${goalId}/items/${itemId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+          body: JSON.stringify({ amount }),
+        },
+      );
+
+      if (!response.ok) throw new Error('Erro ao atualizar item');
+
+      toast.success('Valor do item atualizado!');
+      fetchGoals();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao atualizar item');
+    }
+  };
+
   const handleUpdateProgress = (goal: Goal) => {
     setSelectedGoal(goal);
     setIsProgressModalOpen(true);
@@ -280,6 +303,7 @@ export default function GoalsPage() {
                 onAddItem={handleAddItem}
                 onToggleItem={handleToggleItem}
                 onDeleteItem={handleDeleteItem}
+                onUpdateItem={handleUpdateItem}
                 onUpdateProgress={handleUpdateProgress}
                 onDelete={handleDeleteGoal}
               />

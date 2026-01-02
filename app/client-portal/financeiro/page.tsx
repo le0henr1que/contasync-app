@@ -33,6 +33,11 @@ interface DashboardData {
     balance: number;
     transactionCount: number;
   };
+  monthlyCost?: {
+    recurringMonthly: number;
+    installmentsThisMonth: number;
+    total: number;
+  };
   lastSixMonths: Array<{
     month: string;
     monthKey: string;
@@ -163,7 +168,25 @@ export default function FinancialDashboard() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* Monthly Cost - Featured Card */}
+          <Card className="lg:col-span-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Custo Fixo Mensal
+                </p>
+                <CreditCard className="h-5 w-5 text-primary" />
+              </div>
+              <p className="text-4xl font-bold text-primary mb-1">
+                {data.monthlyCost ? formatCurrency(data.monthlyCost.total) : formatCurrency(0)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Recorrentes + Parcelas do mês
+              </p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
@@ -208,23 +231,6 @@ export default function FinancialDashboard() {
                 }`}
               >
                 {formatCurrency(currentMonth.balance)}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Transações
-                </p>
-                <Receipt className="h-4 w-4 text-primary" />
-              </div>
-              <p className="text-2xl font-bold">
-                {currentMonth.transactionCount}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Este mês
               </p>
             </CardContent>
           </Card>

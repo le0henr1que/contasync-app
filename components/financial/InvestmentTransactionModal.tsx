@@ -22,7 +22,7 @@ interface InvestmentTransactionModalProps {
   onClose: () => void;
   onSuccess: () => void;
   investment: Investment | null;
-  transactionType: 'BUY' | 'SELL';
+  transactionType: 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW';
 }
 
 export function InvestmentTransactionModal({
@@ -92,14 +92,53 @@ export function InvestmentTransactionModal({
       return;
     }
 
-    if (!quantity || parseFloat(quantity) <= 0) {
-      toast.error('Quantidade deve ser maior que zero');
-      return;
-    }
+    const isSavingsBox = investment.type === 'SAVINGS_BOX';
+    const isDeposit = transactionType === 'DEPOSIT';
+    const isWithdraw = transactionType === 'WITHDRAW';
 
-    if (!price || parseFloat(price) <= 0) {
-      toast.error('Preço deve ser maior que zero');
-      return;
+    // For savings box, we use price as the amount
+    if (isSavingsBox && (isDeposit || isWithdraw)) {
+      if (!price || parseFloat(price) <= 0) {
+        toast.error('Valor deve ser maior que zero');
+        return;
+      }
+
+      if (isWithdraw) {
+        const currentValue = Number(investment.totalValue);
+        const withdrawValue = parseFloat(price);
+        if (withdrawValue > currentValue) {
+          toast.error(
+            `Saldo insuficiente. Você possui ${new Intl.NumberFormat('pt-BR', {
+              style: 'currency',
+              currency: 'BRL',
+            }).format(currentValue)}.`,
+          );
+          return;
+        }
+      }
+    } else {
+      // For regular investments
+      if (!quantity || parseFloat(quantity) <= 0) {
+        toast.error('Quantidade deve ser maior que zero');
+        return;
+      }
+
+      if (!price || parseFloat(price) <= 0) {
+        toast.error('Preço deve ser maior que zero');
+        return;
+      }
+
+      // Validate SELL quantity
+      if (transactionType === 'SELL') {
+        const currentQty = Number(investment.currentQuantity);
+        const sellQty = parseFloat(quantity);
+        if (sellQty > currentQty) {
+          toast.error(
+            `Quantidade insuficiente. Você possui ${currentQty.toFixed(6)} unidades.`,
+          );
+          return;
+        }
+      }
     }
 
     if (!date) {
@@ -107,21 +146,44 @@ export function InvestmentTransactionModal({
       return;
     }
 
-    // Validate SELL quantity
-    if (transactionType === 'SELL') {
-      const currentQty = Number(investment.currentQuantity);
-      const sellQty = parseFloat(quantity);
-      if (sellQty > currentQty) {
-        toast.error(
-          `Quantidade insuficiente. Você possui ${currentQty.toFixed(6)} unidades.`,
-        );
-        return;
-      }
-    }
-
     try {
       setIsSubmitting(true);
 
+      // For savings box deposit/withdraw, use dedicated endpoints
+      if (isSavingsBox && (isDeposit || isWithdraw)) {
+        const endpoint = isDeposit ? 'deposit' : 'withdraw';
+        const payload = {
+          amount: parseFloat(price),
+          description: notes.trim() || undefined,
+        };
+
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/financial/investments/${investment.id}/${endpoint}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify(payload),
+          },
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || `Erro ao ${isDeposit ? 'depositar' : 'retirar'}`);
+        }
+
+        toast.success(
+          `${isDeposit ? 'Depósito realizado' : 'Retirada realizada'} com sucesso!`,
+        );
+        onSuccess();
+        handleClose();
+        return;
+      }
+
+      // For regular investments (BUY/SELL)
       const payload: any = {
         type: transactionType,
         quantity: parseFloat(quantity),
@@ -183,19 +245,27 @@ export function InvestmentTransactionModal({
 
   if (!investment) return null;
 
+  const isSavingsBox = investment.type === 'SAVINGS_BOX';
+  const isDeposit = transactionType === 'DEPOSIT';
+  const isWithdraw = transactionType === 'WITHDRAW';
+
   const totalValue =
     quantity && price
       ? parseFloat(quantity) * parseFloat(price) +
         (fees ? parseFloat(fees) : 0)
       : 0;
 
+  const getTitle = () => {
+    if (isDeposit) return `Depositar em ${investment.ticker}`;
+    if (isWithdraw) return `Retirar de ${investment.ticker}`;
+    return `${transactionType === 'BUY' ? 'Comprar' : 'Vender'} ${investment.ticker}`;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {transactionType === 'BUY' ? 'Comprar' : 'Vender'} {investment.ticker}
-          </DialogTitle>
+          <DialogTitle>{getTitle()}</DialogTitle>
           <DialogDescription>
             <span className="block font-medium text-foreground">
               {investment.name}
@@ -206,50 +276,89 @@ export function InvestmentTransactionModal({
                 {Number(investment.currentQuantity).toFixed(6)}
               </span>
             )}
+            {isWithdraw && (
+              <span className="block mt-1">
+                Saldo disponível:{' '}
+                {new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(Number(investment.totalValue))}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="quantity">Quantidade *</Label>
-            <Input
-              id="quantity"
-              type="number"
-              step="0.000001"
-              min="0.000001"
-              placeholder="0"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              disabled={isSubmitting}
-              autoFocus
-            />
-            {transactionType === 'SELL' && (
-              <p className="text-xs text-muted-foreground">
-                Máximo: {Number(investment.currentQuantity).toFixed(6)}
-              </p>
-            )}
-          </div>
+          {isSavingsBox && (isDeposit || isWithdraw) ? (
+            // Savings box deposit/withdraw
+            <div className="space-y-2">
+              <Label htmlFor="price">Valor (R$) *</Label>
+              <Input
+                id="price"
+                type="text"
+                placeholder="0,00"
+                value={displayPrice}
+                onChange={(e) =>
+                  handlePriceChange(e.target.value, setPrice, setDisplayPrice)
+                }
+                disabled={isSubmitting}
+                autoFocus
+              />
+              {isWithdraw && (
+                <p className="text-xs text-muted-foreground">
+                  Máximo:{' '}
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(Number(investment.totalValue))}
+                </p>
+              )}
+            </div>
+          ) : (
+            // Regular investment buy/sell
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Quantidade *</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  step="0.000001"
+                  min="0.000001"
+                  placeholder="0"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+                {transactionType === 'SELL' && (
+                  <p className="text-xs text-muted-foreground">
+                    Máximo: {Number(investment.currentQuantity).toFixed(6)}
+                  </p>
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="price">Preço por Unidade (R$) *</Label>
-            <Input
-              id="price"
-              type="text"
-              placeholder="0,00"
-              value={displayPrice}
-              onChange={(e) =>
-                handlePriceChange(e.target.value, setPrice, setDisplayPrice)
-              }
-              disabled={isSubmitting}
-            />
-            <p className="text-xs text-muted-foreground">
-              Preço médio de compra:{' '}
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              }).format(Number(investment.averagePrice))}
-            </p>
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">Preço por Unidade (R$) *</Label>
+                <Input
+                  id="price"
+                  type="text"
+                  placeholder="0,00"
+                  value={displayPrice}
+                  onChange={(e) =>
+                    handlePriceChange(e.target.value, setPrice, setDisplayPrice)
+                  }
+                  disabled={isSubmitting}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Preço médio de compra:{' '}
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(Number(investment.averagePrice))}
+                </p>
+              </div>
+            </>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="date">Data da Transação *</Label>
@@ -262,19 +371,21 @@ export function InvestmentTransactionModal({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="fees">Taxas/Corretagem (R$)</Label>
-            <Input
-              id="fees"
-              type="text"
-              placeholder="0,00"
-              value={displayFees}
-              onChange={(e) =>
-                handlePriceChange(e.target.value, setFees, setDisplayFees)
-              }
-              disabled={isSubmitting}
-            />
-          </div>
+          {!isSavingsBox && (
+            <div className="space-y-2">
+              <Label htmlFor="fees">Taxas/Corretagem (R$)</Label>
+              <Input
+                id="fees"
+                type="text"
+                placeholder="0,00"
+                value={displayFees}
+                onChange={(e) =>
+                  handlePriceChange(e.target.value, setFees, setDisplayFees)
+                }
+                disabled={isSubmitting}
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="notes">Observações (Opcional)</Label>
@@ -288,18 +399,24 @@ export function InvestmentTransactionModal({
             />
           </div>
 
-          {totalValue > 0 && (
+          {(isSavingsBox ? price && parseFloat(price) > 0 : totalValue > 0) && (
             <div className="p-3 bg-primary/10 rounded-lg">
               <p className="text-xs text-muted-foreground mb-1">
-                Valor total da transação:
+                {isSavingsBox && (isDeposit || isWithdraw)
+                  ? `Valor ${isDeposit ? 'do depósito' : 'da retirada'}:`
+                  : 'Valor total da transação:'}
               </p>
               <p className="text-lg font-bold text-primary">
                 {new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',
-                }).format(totalValue)}
+                }).format(
+                  isSavingsBox && (isDeposit || isWithdraw)
+                    ? parseFloat(price || '0')
+                    : totalValue
+                )}
               </p>
-              {transactionType === 'SELL' && price && (
+              {!isSavingsBox && transactionType === 'SELL' && price && (
                 <p className="text-xs text-muted-foreground mt-1">
                   {parseFloat(price) > Number(investment.averagePrice)
                     ? 'Lucro potencial'
@@ -312,6 +429,24 @@ export function InvestmentTransactionModal({
                     parseFloat(quantity || '0') *
                       (parseFloat(price) - Number(investment.averagePrice)),
                   )}
+                </p>
+              )}
+              {isSavingsBox && isWithdraw && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Novo saldo:{' '}
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(Number(investment.totalValue) - parseFloat(price || '0'))}
+                </p>
+              )}
+              {isSavingsBox && isDeposit && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Novo saldo:{' '}
+                  {new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                  }).format(Number(investment.totalValue) + parseFloat(price || '0'))}
                 </p>
               )}
             </div>
@@ -333,6 +468,10 @@ export function InvestmentTransactionModal({
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Processando...
                 </>
+              ) : isDeposit ? (
+                'Confirmar Depósito'
+              ) : isWithdraw ? (
+                'Confirmar Retirada'
               ) : transactionType === 'BUY' ? (
                 'Confirmar Compra'
               ) : (

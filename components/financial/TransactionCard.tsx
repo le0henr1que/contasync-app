@@ -170,60 +170,66 @@ export function TransactionCard({ transaction, onView }: TransactionCardProps) {
   return (
     <Card
       variant="default"
-      className={`hover:border-primary/50 transition-colors ${onView ? 'cursor-pointer' : ''}`}
+      className={`hover:border-primary/50 transition-colors ${onView ? 'cursor-pointer' : ''} overflow-hidden`}
       onClick={() => onView?.(transaction)}
     >
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <CardTitle className="flex items-center gap-2 text-base">
+      <CardHeader className="overflow-hidden">
+        <div className="flex items-start justify-between gap-4 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 min-w-0">
               {isIncome ? (
                 <TrendingUp className="h-4 w-4 shrink-0 text-green-600" />
               ) : (
                 <TrendingDown className="h-4 w-4 shrink-0 text-red-600" />
               )}
-              <span className="truncate">{transaction.description}</span>
-            </CardTitle>
+              <h3
+                className="text-base font-semibold truncate min-w-0"
+                title={transaction.description}
+              >
+                {transaction.description}
+              </h3>
+            </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 overflow-hidden">
         {/* Amount */}
-        <div>
+        <div className="overflow-hidden">
           <p
-            className={`text-2xl font-bold ${
+            className={`text-2xl font-bold truncate ${
               isIncome ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}
+            title={`${isIncome ? '+' : '-'} ${formatCurrency(transaction.amount)}`}
           >
             {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
           </p>
         </div>
 
         {/* Date & Category */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5" />
-            <span>
+        <div className="flex items-center justify-between gap-3 flex-wrap min-w-0">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0 overflow-hidden">
+            <Calendar className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
               {format(new Date(transaction.date), 'dd/MM/yyyy', {
                 locale: ptBR,
               })}
             </span>
           </div>
 
-          <Badge className={categoryInfo.color}>{categoryInfo.label}</Badge>
+          <Badge className={`${categoryInfo.color} shrink-0`}>{categoryInfo.label}</Badge>
         </div>
 
         {/* Payment Method & Indicators */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-3 flex-wrap min-w-0">
           {transaction.paymentMethod && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <CreditCard className="h-3.5 w-3.5" />
-              <span>{paymentMethodLabels[transaction.paymentMethod]}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0 overflow-hidden">
+              <CreditCard className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{paymentMethodLabels[transaction.paymentMethod]}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto shrink-0">
             {transaction.isFixed && (
               <div
                 className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400"
@@ -245,8 +251,11 @@ export function TransactionCard({ transaction, onView }: TransactionCardProps) {
 
         {/* Notes preview */}
         {transaction.notes && (
-          <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground line-clamp-2">
+          <div className="pt-2 border-t overflow-hidden">
+            <p
+              className="text-xs text-muted-foreground line-clamp-2 break-words overflow-hidden"
+              title={transaction.notes}
+            >
               {transaction.notes}
             </p>
           </div>
