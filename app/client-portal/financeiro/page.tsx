@@ -140,6 +140,7 @@ export default function FinancialDashboard() {
 
   const { currentMonth } = data;
 
+  console.log(data.monthlyCost, "CUSTO MENSAL")
   return (
     <DashboardLayout>
       <div className="space-y-6">

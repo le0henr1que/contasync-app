@@ -17,6 +17,7 @@ import {
   PowerOff,
   Edit,
   Trash2,
+  DollarSign,
 } from 'lucide-react';
 
 export type RecurringFrequency = 'MONTHLY' | 'QUARTERLY' | 'SEMIANNUAL' | 'YEARLY';
@@ -44,6 +45,7 @@ interface RecurringPaymentCardProps {
   onToggle?: (payment: RecurringPayment) => void;
   onEdit?: (payment: RecurringPayment) => void;
   onDelete?: (payment: RecurringPayment) => void;
+  onPay?: (payment: RecurringPayment) => void;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -84,6 +86,7 @@ export function RecurringPaymentCard({
   onToggle,
   onEdit,
   onDelete,
+  onPay,
 }: RecurringPaymentCardProps) {
   return (
     <Card
@@ -124,40 +127,33 @@ export function RecurringPaymentCard({
           </p>
         </div>
 
-        {/* Next Due Date & Frequency */}
+        {/* Frequency & Category */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5" />
-            <div>
-              <p className="text-xs font-medium">Próximo vencimento</p>
-              <p className="text-xs">
-                {format(new Date(payment.nextDueDate), "dd/MM/yyyy 'às' HH:mm", {
-                  locale: ptBR,
-                })}
-              </p>
-            </div>
-          </div>
-
           <Badge className={frequencyColors[payment.frequency]}>
             {frequencyLabels[payment.frequency]}
           </Badge>
+          <span className="text-xs text-muted-foreground">
+            {categoryLabels[payment.category] || payment.category}
+          </span>
         </div>
 
-        {/* Category & Day of Month */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>{categoryLabels[payment.category] || payment.category}</span>
-          <span>Dia {payment.dayOfMonth}</span>
+        {/* Day of Month */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5" />
+          <span className="text-xs">Dia {payment.dayOfMonth} de cada período</span>
         </div>
 
-        {/* Last Processed */}
-        {payment.lastProcessedDate && (
+        {/* Pay Button */}
+        {payment.isActive && onPay && (
           <div className="pt-2 border-t">
-            <p className="text-xs text-muted-foreground">
-              Último processamento:{' '}
-              {format(new Date(payment.lastProcessedDate), 'dd/MM/yyyy', {
-                locale: ptBR,
-              })}
-            </p>
+            <Button
+              size="sm"
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => onPay(payment)}
+            >
+              <DollarSign className="h-3.5 w-3.5 mr-1.5" />
+              Pagar
+            </Button>
           </div>
         )}
 

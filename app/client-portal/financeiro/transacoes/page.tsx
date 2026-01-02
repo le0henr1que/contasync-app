@@ -195,6 +195,15 @@ export default function TransactionsPage() {
     setCurrentPage(1);
   };
 
+  const handleDeleteTransaction = (transactionId: string) => {
+    // Remove the transaction from the list
+    setTransactions((prev) => prev.filter((t) => t.id !== transactionId));
+    setTotalTransactions((prev) => prev - 1);
+
+    // Optionally refetch to update summary
+    fetchTransactions();
+  };
+
   if (isLoading && transactions.length === 0) {
     return (
       <DashboardLayout>
@@ -408,7 +417,11 @@ export default function TransactionsPage() {
             {/* Grid Layout - 1 column on mobile, 2 on tablet, 3 on desktop */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {transactions.map((transaction) => (
-                <TransactionCard key={transaction.id} transaction={transaction} />
+                <TransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                  onDelete={handleDeleteTransaction}
+                />
               ))}
             </div>
 

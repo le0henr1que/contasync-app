@@ -21,7 +21,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 import type { RecurringPayment } from './RecurringPaymentCard';
 
 interface AddRecurringModalProps {
@@ -63,8 +62,6 @@ export function AddRecurringModal({
   const [category, setCategory] = useState('');
   const [frequency, setFrequency] = useState('MONTHLY');
   const [dayOfMonth, setDayOfMonth] = useState('1');
-  const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [endDate, setEndDate] = useState('');
 
   // Load editing data
   useEffect(() => {
@@ -81,12 +78,6 @@ export function AddRecurringModal({
       setCategory(editingPayment.category);
       setFrequency(editingPayment.frequency);
       setDayOfMonth(editingPayment.dayOfMonth.toString());
-      setStartDate(format(new Date(editingPayment.startDate), 'yyyy-MM-dd'));
-      setEndDate(
-        editingPayment.endDate
-          ? format(new Date(editingPayment.endDate), 'yyyy-MM-dd')
-          : ''
-      );
     }
   }, [editingPayment]);
 
@@ -140,11 +131,6 @@ export function AddRecurringModal({
       return;
     }
 
-    if (!startDate) {
-      toast.error('Data de início é obrigatória');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
 
@@ -154,15 +140,10 @@ export function AddRecurringModal({
         category,
         frequency,
         dayOfMonth: dayNum,
-        startDate: new Date(startDate).toISOString(),
       };
 
       if (description.trim()) {
         payload.description = description.trim();
-      }
-
-      if (endDate) {
-        payload.endDate = new Date(endDate).toISOString();
       }
 
       const token = localStorage.getItem('accessToken');
@@ -210,8 +191,6 @@ export function AddRecurringModal({
       setCategory('');
       setFrequency('MONTHLY');
       setDayOfMonth('1');
-      setStartDate(format(new Date(), 'yyyy-MM-dd'));
-      setEndDate('');
       onClose();
     }
   };
@@ -320,32 +299,6 @@ export function AddRecurringModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="startDate">Data de Início *</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="endDate">Data de Término</Label>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                min={startDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                disabled={isSubmitting}
-              />
-              <p className="text-xs text-muted-foreground">Opcional</p>
-            </div>
           </div>
 
           <div className="flex gap-3 pt-4">

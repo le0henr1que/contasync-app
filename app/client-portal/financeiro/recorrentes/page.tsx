@@ -40,6 +40,7 @@ import {
   RecurringPayment,
 } from '@/components/financial/RecurringPaymentCard';
 import { AddRecurringModal } from '@/components/financial/AddRecurringModal';
+import { PayRecurringModal } from '@/components/financial/PayRecurringModal';
 
 interface RecurringResponse {
   data: RecurringPayment[];
@@ -109,6 +110,9 @@ export default function RecurringPaymentsPage() {
     null
   );
   const [deletingPayment, setDeletingPayment] = useState<RecurringPayment | null>(
+    null
+  );
+  const [payingPayment, setPayingPayment] = useState<RecurringPayment | null>(
     null
   );
   const limit = 20;
@@ -239,6 +243,7 @@ export default function RecurringPaymentsPage() {
       toast.error(error.message || 'Erro ao deletar pagamento recorrente');
     }
   };
+
 
   const toggleSortOrder = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -463,6 +468,7 @@ export default function RecurringPaymentsPage() {
                   onToggle={handleToggle}
                   onEdit={handleEdit}
                   onDelete={(p) => setDeletingPayment(p)}
+                  onPay={(p) => setPayingPayment(p)}
                 />
               ))}
             </div>
@@ -536,6 +542,16 @@ export default function RecurringPaymentsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PayRecurringModal
+        isOpen={!!payingPayment}
+        onClose={() => setPayingPayment(null)}
+        onSuccess={() => {
+          setPayingPayment(null);
+          fetchPayments();
+        }}
+        payment={payingPayment}
+      />
     </DashboardLayout>
   );
 }

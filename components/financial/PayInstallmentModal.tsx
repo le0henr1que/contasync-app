@@ -49,7 +49,9 @@ export function PayInstallmentModal({
           ? parseFloat(payment.amount)
           : payment.amount;
       setAmountPaid(defaultAmount.toString());
-      setDisplayAmountPaid(formatCurrencyInput(defaultAmount.toString()));
+      // Convert amount to cents (multiply by 100) before formatting
+      const amountInCents = Math.round(defaultAmount * 100).toString();
+      setDisplayAmountPaid(formatCurrencyInput(amountInCents));
       setNotes('');
     }
   }, [payment]);

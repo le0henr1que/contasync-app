@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -9,6 +10,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   TrendingUp,
   TrendingDown,
@@ -16,7 +28,10 @@ import {
   CheckCircle2,
   CreditCard,
   Repeat,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export type TransactionType = 'INCOME' | 'EXPENSE';
 export type TransactionCategory =
@@ -68,6 +83,7 @@ export interface Transaction {
 interface TransactionCardProps {
   transaction: Transaction;
   onView?: (transaction: Transaction) => void;
+  onDelete?: (transactionId: string) => void;
 }
 
 const categoryConfig: Record<
@@ -163,35 +179,79 @@ function formatCurrency(value: string | number): string {
   }).format(numValue);
 }
 
-export function TransactionCard({ transaction, onView }: TransactionCardProps) {
+export function TransactionCard({ transaction, onView, onDelete }: TransactionCardProps) {
   const categoryInfo = categoryConfig[transaction.category];
   const isIncome = transaction.type === 'INCOME';
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/financial/transactions/${transaction.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erro ao excluir transação');
+      }
+
+      toast.success('Transação excluída com sucesso!');
+      setShowDeleteDialog(false);
+      onDelete?.(transaction.id);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao excluir transação');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
-    <Card
-      variant="default"
-      className={`hover:border-primary/50 transition-colors ${onView ? 'cursor-pointer' : ''} overflow-hidden`}
-      onClick={() => onView?.(transaction)}
-    >
-      <CardHeader className="overflow-hidden">
-        <div className="flex items-start justify-between gap-4 min-w-0">
-          <div className="flex-1 min-w-0 overflow-hidden">
-            <div className="flex items-center gap-2 min-w-0">
-              {isIncome ? (
-                <TrendingUp className="h-4 w-4 shrink-0 text-green-600" />
-              ) : (
-                <TrendingDown className="h-4 w-4 shrink-0 text-red-600" />
-              )}
-              <h3
-                className="text-base font-semibold truncate min-w-0"
-                title={transaction.description}
-              >
-                {transaction.description}
-              </h3>
+    <>
+      <Card
+        variant="default"
+        className={`hover:border-primary/50 transition-colors overflow-hidden`}
+      >
+        <CardHeader className="overflow-hidden">
+          <div className="flex items-start justify-between gap-4 min-w-0">
+            <div
+              className={`flex-1 min-w-0 overflow-hidden ${onView ? 'cursor-pointer' : ''}`}
+              onClick={() => onView?.(transaction)}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                {isIncome ? (
+                  <TrendingUp className="h-4 w-4 shrink-0 text-green-600" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 shrink-0 text-red-600" />
+                )}
+                <h3
+                  className="text-base font-semibold truncate min-w-0"
+                  title={transaction.description}
+                >
+                  {transaction.description}
+                </h3>
+              </div>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteDialog(true);
+              }}
+              title="Excluir transação"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
       <CardContent className="space-y-4 overflow-hidden">
         {/* Amount */}
@@ -262,5 +322,40 @@ export function TransactionCard({ transaction, onView }: TransactionCardProps) {
         )}
       </CardContent>
     </Card>
+
+    <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Excluir transação</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+            <div className="mt-4 p-3 bg-muted rounded-md">
+              <p className="font-medium">{transaction.description}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isIncome ? '+' : '-'} {formatCurrency(transaction.amount)}
+              </p>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive hover:bg-destructive/90"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Excluindo...
+              </>
+            ) : (
+              'Excluir'
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
