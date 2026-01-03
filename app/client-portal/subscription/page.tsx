@@ -281,27 +281,31 @@ export default function SubscriptionPage() {
                 </div>
               )}
 
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
-                  Início do Período
-                </p>
-                <p className="font-medium">
-                  {format(new Date(subscription.currentPeriodStart), 'dd/MM/yyyy', { locale: ptBR })}
-                </p>
-              </div>
+              {subscription.currentPeriodStart && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    Início do Período
+                  </p>
+                  <p className="font-medium">
+                    {format(new Date(subscription.currentPeriodStart), 'dd/MM/yyyy', { locale: ptBR })}
+                  </p>
+                </div>
+              )}
 
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
-                  {isTrialing ? 'Fim do Teste Gratuito' : 'Próxima Cobrança'}
-                </p>
-                <p className="font-medium">
-                  {format(
-                    new Date(isTrialing && subscription.trialEnd ? subscription.trialEnd : subscription.currentPeriodEnd),
-                    'dd/MM/yyyy',
-                    { locale: ptBR }
-                  )}
-                </p>
-              </div>
+              {subscription.currentPeriodEnd && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">
+                    {isTrialing ? 'Fim do Teste Gratuito' : 'Próxima Cobrança'}
+                  </p>
+                  <p className="font-medium">
+                    {format(
+                      new Date(isTrialing && subscription.trialEnd ? subscription.trialEnd : subscription.currentPeriodEnd),
+                      'dd/MM/yyyy',
+                      { locale: ptBR }
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {subscription.cancelAtPeriodEnd && (

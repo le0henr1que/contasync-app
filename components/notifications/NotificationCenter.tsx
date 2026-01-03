@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Check, FileText, CreditCard, TrendingUp, AlertCircle } from 'lucide-react';
+import { Bell, Check, FileText, CreditCard, TrendingUp, AlertCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,7 +19,7 @@ import { useAuthStore } from '@/store/auth.store';
 
 interface Notification {
   id: string;
-  type: 'DOCUMENT_AVAILABLE' | 'DOCUMENT_REQUESTED' | 'PAYMENT_REGISTERED' | 'PAYMENT_OVERDUE';
+  type: 'DOCUMENT_AVAILABLE' | 'DOCUMENT_REQUESTED' | 'PAYMENT_REGISTERED' | 'PAYMENT_OVERDUE' | 'INVITATION_RECEIVED';
   title: string;
   message: string;
   isRead: boolean;
@@ -32,6 +32,7 @@ const notificationIcons = {
   DOCUMENT_REQUESTED: FileText,
   PAYMENT_REGISTERED: CreditCard,
   PAYMENT_OVERDUE: AlertCircle,
+  INVITATION_RECEIVED: Mail,
 };
 
 const notificationColors = {
@@ -39,6 +40,7 @@ const notificationColors = {
   DOCUMENT_REQUESTED: 'text-yellow-500',
   PAYMENT_REGISTERED: 'text-green-500',
   PAYMENT_OVERDUE: 'text-red-500',
+  INVITATION_RECEIVED: 'text-purple-500',
 };
 
 export function NotificationCenter() {
@@ -209,6 +211,12 @@ export function NotificationCenter() {
                     onClick={() => {
                       if (!notification.isRead) {
                         markAsRead(notification.id);
+                      }
+
+                      // Handle invitation click
+                      if (notification.type === 'INVITATION_RECEIVED' && notification.metadata?.token) {
+                        setIsOpen(false);
+                        router.push(`/accept-invite?token=${notification.metadata.token}`);
                       }
                     }}
                   >

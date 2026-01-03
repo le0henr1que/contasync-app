@@ -15,11 +15,7 @@ interface InviteClientModalProps {
 }
 
 export function InviteClientModal({ open, onOpenChange, onSuccess }: InviteClientModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    cpfCnpj: '',
-  });
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,48 +24,54 @@ export function InviteClientModal({ open, onOpenChange, onSuccess }: InviteClien
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations`, {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/invitations`;
+
+      console.log('Sending invitation request to:', apiUrl);
+      console.log('Email:', email);
+      console.log('Has token:', !!token);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ email }),
       });
+
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
 
       if (!response.ok) {
         const error = await response.json();
+        console.error('Server error response:', error);
         throw new Error(error.message || 'Erro ao enviar convite');
       }
 
       const data = await response.json();
+      console.log('Success response:', data);
 
       toast.success('Convite enviado com sucesso!', {
-        description: `Um email foi enviado para ${formData.email}`,
+        description: `Um email foi enviado para ${email}`,
       });
 
       // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        cpfCnpj: '',
-      });
+      setEmail('');
 
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
-      console.error('Error sending invitation:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao enviar convite');
+      console.error('Full error details:', error);
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        toast.error('Erro de conexão', {
+          description: 'Não foi possível conectar ao servidor. Verifique se o backend está rodando.',
+        });
+      } else {
+        toast.error(error instanceof Error ? error.message : 'Erro ao enviar convite');
+      }
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
   };
 
   return (
@@ -88,50 +90,20 @@ export function InviteClientModal({ open, onOpenChange, onSuccess }: InviteClien
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="name">Nome Completo *</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="João Silva"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email">Email *</Label>
+              <Label htmlFor="email">Email do Cliente *</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 required
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="joao@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="cliente@example.com"
                 disabled={isLoading}
+                autoFocus
               />
               <p className="text-xs text-muted-foreground mt-1">
-                O convite será enviado para este email
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="cpfCnpj">CPF ou CNPJ *</Label>
-              <Input
-                id="cpfCnpj"
-                name="cpfCnpj"
-                type="text"
-                required
-                value={formData.cpfCnpj}
-                onChange={handleChange}
-                placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                disabled={isLoading}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Documento de identificação do cliente
+                Informe apenas o email. O sistema detecta automaticamente se o cliente já possui conta.
               </p>
             </div>
 
@@ -141,9 +113,9 @@ export function InviteClientModal({ open, onOpenChange, onSuccess }: InviteClien
               </p>
               <ul className="text-xs text-blue-800 mt-2 space-y-1 ml-4 list-disc">
                 <li>O cliente receberá um email com link de convite</li>
+                <li>Se já tiver conta, apenas vincula ao seu escritório</li>
+                <li>Se for novo, criará uma senha ao aceitar</li>
                 <li>O link é válido por 7 dias</li>
-                <li>Ao aceitar, o cliente criará uma senha</li>
-                <li>Depois poderá acessar o portal com seus dados</li>
               </ul>
             </div>
           </div>

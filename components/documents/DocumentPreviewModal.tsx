@@ -115,7 +115,9 @@ export function DocumentPreviewModal({
 
       if (fileResponse.ok) {
         const blob = await fileResponse.blob();
-        const url = window.URL.createObjectURL(blob);
+        // Criar blob com o tipo MIME correto
+        const typedBlob = new Blob([blob], { type: data.mimeType });
+        const url = window.URL.createObjectURL(typedBlob);
         setPreviewUrl(url);
       }
     } catch (error: any) {
@@ -227,11 +229,17 @@ export function DocumentPreviewModal({
                 />
               )}
               {isImage && previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt={document.title}
-                  className="w-full h-auto max-h-[500px] object-contain"
-                />
+                <div className="flex items-center justify-center bg-black/5 min-h-[300px]">
+                  <img
+                    src={previewUrl}
+                    alt={document.title}
+                    className="w-full h-auto max-h-[500px] object-contain"
+                    onError={(e) => {
+                      console.error('Erro ao carregar imagem:', e);
+                      toast.error('Erro ao carregar preview da imagem');
+                    }}
+                  />
+                </div>
               )}
               {!isPDF && !isImage && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">

@@ -10,21 +10,23 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle2, AlertCircle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/store/auth.store';
 
 interface InvitationData {
   id: string;
-  clientName: string;
-  clientEmail: string;
+  email: string;
+  name: string;
   accountantName: string;
-  accountantCompany: string;
   expiresAt: string;
-  isExpired: boolean;
+  userExists?: boolean;
 }
 
 function AcceptInviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
+  const { setUser } = useAuthStore();
 
   const [invitation, setInvitation] = useState<InvitationData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,28 +71,35 @@ function AcceptInviteContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('As senhas não coincidem');
-      return;
-    }
+    // Only validate password for new users
+    if (!invitation?.userExists) {
+      if (formData.password !== formData.confirmPassword) {
+        toast.error('As senhas não coincidem');
+        return;
+      }
 
-    if (formData.password.length < 6) {
-      toast.error('A senha deve ter no mínimo 6 caracteres');
-      return;
+      if (formData.password.length < 6) {
+        toast.error('A senha deve ter no mínimo 6 caracteres');
+        return;
+      }
     }
 
     setIsAccepting(true);
 
     try {
+      const payload: { token: string; password?: string } = { token: token! };
+
+      // Only send password for new users
+      if (!invitation?.userExists) {
+        payload.password = formData.password;
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/invitations/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          token,
-          password: formData.password,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -103,12 +112,24 @@ function AcceptInviteContent() {
       // Save access token
       localStorage.setItem('accessToken', data.accessToken);
 
-      toast.success('Convite aceito com sucesso!', {
+      // Fetch updated user data to ensure auth store has latest info
+      try {
+        const user = await authService.getCurrentUser();
+        setUser(user);
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+      }
+
+      const successMessage = invitation?.userExists
+        ? 'Conta vinculada ao contador com sucesso!'
+        : 'Convite aceito com sucesso!';
+
+      toast.success(successMessage, {
         description: 'Bem-vindo ao ContaSync!',
       });
 
-      // Redirect to client dashboard
-      router.push('/dashboard');
+      // Redirect to client portal
+      router.push('/client-portal');
     } catch (err) {
       console.error('Error accepting invitation:', err);
       toast.error(err instanceof Error ? err.message : 'Erro ao aceitar convite');
@@ -242,20 +263,28 @@ function AcceptInviteContent() {
                 <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">Convite de:</p>
-                  <p className="text-sm text-muted-foreground">{invitation.accountantCompany}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground">
                     Contador: {invitation.accountantName}
                   </p>
                 </div>
               </div>
             </div>
 
-            <Alert className="border-blue-500 bg-blue-50">
-              <AlertDescription className="text-blue-900 text-sm">
-                <strong>Bem-vindo ao ContaSync!</strong><br />
-                Crie uma senha para acessar seu portal e compartilhar documentos com seu contador.
-              </AlertDescription>
-            </Alert>
+            {invitation.userExists ? (
+              <Alert className="border-green-500 bg-green-50">
+                <AlertDescription className="text-green-900 text-sm">
+                  <strong>Conta Encontrada!</strong><br />
+                  Você já possui uma conta individual. Ao aceitar este convite, sua conta será vinculada ao contador {invitation.accountantName}.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <Alert className="border-blue-500 bg-blue-50">
+                <AlertDescription className="text-blue-900 text-sm">
+                  <strong>Bem-vindo ao ContaSync!</strong><br />
+                  Crie uma senha para acessar seu portal e compartilhar documentos com seu contador.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -264,51 +293,55 @@ function AcceptInviteContent() {
                 <Input
                   id="email"
                   type="email"
-                  value={invitation.clientEmail}
+                  value={invitation.email}
                   disabled
                   className="bg-muted"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="password">Criar Senha *</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Mínimo 6 caracteres"
-                  minLength={6}
-                  disabled={isAccepting}
-                />
-              </div>
+              {!invitation.userExists && (
+                <>
+                  <div>
+                    <Label htmlFor="password">Criar Senha *</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Mínimo 6 caracteres"
+                      minLength={6}
+                      disabled={isAccepting}
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="Digite a senha novamente"
-                  disabled={isAccepting}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      required
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Digite a senha novamente"
+                      disabled={isAccepting}
+                    />
+                  </div>
+                </>
+              )}
 
               <Button type="submit" className="w-full" size="lg" disabled={isAccepting}>
                 {isAccepting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Aceitando convite...
+                    {invitation.userExists ? 'Vinculando conta...' : 'Aceitando convite...'}
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Aceitar Convite e Criar Conta
+                    {invitation.userExists ? 'Vincular Conta ao Contador' : 'Aceitar Convite e Criar Conta'}
                   </>
                 )}
               </Button>

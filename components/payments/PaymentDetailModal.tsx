@@ -105,6 +105,7 @@ export function PaymentDetailModal({
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
+  const [documentBlobUrls, setDocumentBlobUrls] = useState<Record<string, string>>({});
 
   // Fetch documents related to this payment
   useEffect(() => {
@@ -144,6 +145,48 @@ export function PaymentDetailModal({
     fetchDocuments();
   }, [payment?.id, isOpen]);
 
+  // Fetch blob URLs for documents
+  useEffect(() => {
+    const fetchBlobUrls = async () => {
+      const newBlobUrls: Record<string, string> = {};
+
+      for (const doc of documents) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/documents/${doc.id}/download`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const blob = await response.blob();
+            const typedBlob = new Blob([blob], { type: doc.mimeType });
+            const url = window.URL.createObjectURL(typedBlob);
+            newBlobUrls[doc.id] = url;
+          }
+        } catch (error) {
+          console.error(`Error fetching blob for document ${doc.id}:`, error);
+        }
+      }
+
+      setDocumentBlobUrls(newBlobUrls);
+    };
+
+    if (documents.length > 0) {
+      fetchBlobUrls();
+    }
+
+    // Cleanup blob URLs on unmount or when documents change
+    return () => {
+      Object.values(documentBlobUrls).forEach(url => {
+        window.URL.revokeObjectURL(url);
+      });
+    };
+  }, [documents]);
+
   // Early return DEPOIS de todos os hooks
   if (!payment) return null;
 
@@ -158,7 +201,7 @@ export function PaymentDetailModal({
     if (!payment.receiptPath) return;
 
     const link = document.createElement('a');
-    link.href = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${payment.receiptPath}`;
+    link.href = `${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/receipt/download`;
     link.download = payment.fileName || 'recibo';
     link.target = '_blank';
     document.body.appendChild(link);
@@ -166,14 +209,35 @@ export function PaymentDetailModal({
     document.body.removeChild(link);
   };
 
-  const handleDownloadDocument = (doc: Document) => {
-    const link = document.createElement('a');
-    link.href = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${doc.filePath}`;
-    link.download = doc.fileName;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadDocument = async (doc: Document) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/documents/${doc.id}/download`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Erro ao baixar documento');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = doc.fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Download iniciado');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao baixar documento');
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -328,14 +392,14 @@ export function PaymentDetailModal({
               <div className="border rounded-lg overflow-hidden bg-muted/10">
                 {isImage && (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${payment.receiptPath}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/receipt/download`}
                     alt="Comprovante de pagamento"
                     className="w-full h-auto max-h-[500px] object-contain"
                   />
                 )}
                 {isPdf && (
                   <iframe
-                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${payment.receiptPath}`}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}/payments/${payment.id}/receipt/download`}
                     className="w-full h-[500px]"
                     title="Preview do comprovante PDF"
                   />
@@ -427,16 +491,16 @@ export function PaymentDetailModal({
                       {previewDoc?.id === doc.id && (
                         <div className="mt-4 border-t pt-4">
                           <div className="border rounded-lg overflow-hidden bg-muted/10">
-                            {isDocImage && (
+                            {isDocImage && documentBlobUrls[doc.id] && (
                               <img
-                                src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${doc.filePath}`}
+                                src={documentBlobUrls[doc.id]}
                                 alt={doc.title}
                                 className="w-full h-auto max-h-[400px] object-contain"
                               />
                             )}
-                            {isDocPdf && (
+                            {isDocPdf && documentBlobUrls[doc.id] && (
                               <iframe
-                                src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${doc.filePath}`}
+                                src={documentBlobUrls[doc.id]}
                                 className="w-full h-[400px]"
                                 title={`Preview de ${doc.title}`}
                               />
@@ -513,16 +577,16 @@ export function PaymentDetailModal({
 
             <div className="overflow-y-auto px-6 py-6">
               <div className="border rounded-lg overflow-hidden bg-muted/10">
-                {previewDoc.mimeType?.startsWith('image/') && (
+                {previewDoc.mimeType?.startsWith('image/') && documentBlobUrls[previewDoc.id] && (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${previewDoc.filePath}`}
+                    src={documentBlobUrls[previewDoc.id]}
                     alt={previewDoc.title}
                     className="w-full h-auto"
                   />
                 )}
-                {previewDoc.mimeType === 'application/pdf' && (
+                {previewDoc.mimeType === 'application/pdf' && documentBlobUrls[previewDoc.id] && (
                   <iframe
-                    src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${previewDoc.filePath}`}
+                    src={documentBlobUrls[previewDoc.id]}
                     className="w-full h-[70vh]"
                     title={`Preview de ${previewDoc.title}`}
                   />

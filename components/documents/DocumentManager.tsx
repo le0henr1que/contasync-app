@@ -53,6 +53,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { DocumentPreviewModal } from "@/components/documents/DocumentPreviewModal"
 
 type Document = {
   id: string
@@ -68,6 +69,9 @@ type FolderType = {
   id: string
   name: string
   type: string
+  icon?: string
+  color?: string
+  description?: string
   isDefault: boolean
   createdAt: string
   documents: Document[]
@@ -93,6 +97,10 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState("")
+  const [newFolderType, setNewFolderType] = useState("OUTROS")
+  const [newFolderIcon, setNewFolderIcon] = useState("")
+  const [newFolderColor, setNewFolderColor] = useState("#8b5cf6")
+  const [newFolderDescription, setNewFolderDescription] = useState("")
 
   // Upload document state
   const [isUploadDocumentOpen, setIsUploadDocumentOpen] = useState(false)
@@ -106,6 +114,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null)
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false)
 
   useEffect(() => {
     fetchFolders()
@@ -118,8 +128,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
       // Se tem clientId, é a contadora vendo documentos do cliente
       // Senão, é o cliente vendo seus próprios documentos
       const endpoint = clientId
-        ? `${process.env.NEXT_PUBLIC_API_URL}/documents/client/${clientId}/grouped`
-        : `${process.env.NEXT_PUBLIC_API_URL}/documents/me/grouped`
+        ? `${process.env.NEXT_PUBLIC_API_URL}/document-folders/client/${clientId}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/document-folders`
 
       const response = await fetch(endpoint, {
         headers: {
@@ -141,27 +151,47 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
   }
 
   const createFolder = async () => {
-    if (!newFolderName.trim()) return
+    if (!newFolderName.trim()) {
+      toast.error('Digite um nome para a pasta')
+      return
+    }
 
     try {
+      const body: any = {
+        name: newFolderName,
+        type: newFolderType,
+      }
+
+      // Se estiver criando para um cliente específico (contador)
+      if (clientId) {
+        body.clientId = clientId
+      }
+
+      // Campos opcionais
+      if (newFolderIcon) body.icon = newFolderIcon
+      if (newFolderColor) body.color = newFolderColor
+      if (newFolderDescription) body.description = newFolderDescription
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/document-folders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
         },
-        body: JSON.stringify({
-          name: newFolderName,
-          type: 'CUSTOM',
-        }),
+        body: JSON.stringify(body),
       })
 
       if (!response.ok) {
-        throw new Error('Erro ao criar pasta')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Erro ao criar pasta')
       }
 
       toast.success('Pasta criada com sucesso')
       setNewFolderName("")
+      setNewFolderType("OUTROS")
+      setNewFolderIcon("")
+      setNewFolderColor("#8b5cf6")
+      setNewFolderDescription("")
       setIsCreateFolderOpen(false)
       fetchFolders()
     } catch (error: any) {
@@ -175,6 +205,20 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
       return
     }
 
+    // Encontrar a pasta para mostrar no dialog de confirmação
+    const folder = folders.find((f) => f.id === folderId)
+    if (!folder) return
+
+    // Confirmar exclusão
+    const confirmed = window.confirm(
+      `Tem certeza que deseja excluir a pasta "${folder.name}"?` +
+      (folder.documents.length > 0
+        ? `\n\nEsta pasta contém ${folder.documents.length} documento(s) que serão movidos para "Outros".`
+        : '')
+    )
+
+    if (!confirmed) return
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/document-folders/${folderId}`, {
         method: 'DELETE',
@@ -184,7 +228,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Erro ao deletar pasta')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Erro ao deletar pasta')
       }
 
       toast.success('Pasta deletada com sucesso')
@@ -253,8 +298,8 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
   }
 
   const viewDocumentDetails = (doc: Document) => {
-    // Abre o arquivo em uma nova aba
-    window.open(`http://localhost:3000/${doc.filePath}`, '_blank')
+    setSelectedDocumentId(doc.id)
+    setIsPreviewModalOpen(true)
   }
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -426,42 +471,92 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
                 <CardTitle>Pastas</CardTitle>
                 <CardDescription>Organizadas por categoria</CardDescription>
               </div>
-              {!clientId && (
-                <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2">
-                      <Plus className="h-4 w-4" />
-                      Nova
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Criar Nova Pasta</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
+              <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Nova
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Criar Nova Pasta</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="folder-name">Nome da Pasta *</Label>
+                      <Input
+                        id="folder-name"
+                        placeholder="Digite o nome da pasta"
+                        value={newFolderName}
+                        onChange={(e) => setNewFolderName(e.target.value)}
+                        className="!h-10"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="folder-type">Tipo da Pasta *</Label>
+                      <Select value={newFolderType} onValueChange={setNewFolderType}>
+                        <SelectTrigger className="!h-10">
+                          <SelectValue placeholder="Selecione o tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="NOTAS_FISCAIS">Notas Fiscais</SelectItem>
+                          <SelectItem value="CONTRATOS">Contratos</SelectItem>
+                          <SelectItem value="DECLARACOES">Declarações</SelectItem>
+                          <SelectItem value="COMPROVANTES">Comprovantes</SelectItem>
+                          <SelectItem value="BALANCETES">Balancetes</SelectItem>
+                          <SelectItem value="OUTROS">Outros</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="folder-name">Nome da Pasta</Label>
+                        <Label htmlFor="folder-icon">Ícone (emoji)</Label>
                         <Input
-                          id="folder-name"
-                          placeholder="Digite o nome da pasta"
-                          value={newFolderName}
-                          onChange={(e) => setNewFolderName(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && createFolder()}
+                          id="folder-icon"
+                          placeholder="📁"
+                          value={newFolderIcon}
+                          onChange={(e) => setNewFolderIcon(e.target.value)}
+                          maxLength={2}
+                          className="!h-10"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="folder-color">Cor</Label>
+                        <Input
+                          id="folder-color"
+                          type="color"
+                          value={newFolderColor}
+                          onChange={(e) => setNewFolderColor(e.target.value)}
                           className="!h-10"
                         />
                       </div>
                     </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button onClick={createFolder}>
-                        Criar Pasta
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              )}
+
+                    <div className="space-y-2">
+                      <Label htmlFor="folder-description">Descrição (opcional)</Label>
+                      <Textarea
+                        id="folder-description"
+                        placeholder="Descreva o conteúdo desta pasta"
+                        value={newFolderDescription}
+                        onChange={(e) => setNewFolderDescription(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={createFolder}>
+                      Criar Pasta
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardHeader>
           <CardContent className="p-6">
@@ -485,7 +580,16 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <Folder className="h-5 w-5 flex-shrink-0" />
+                        {/* Bolinha colorida */}
+                        <div
+                          className="h-3 w-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: folder.color || '#8b5cf6' }}
+                        />
+                        {folder.icon ? (
+                          <span className="text-lg flex-shrink-0">{folder.icon}</span>
+                        ) : (
+                          <Folder className="h-5 w-5 flex-shrink-0" />
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{folder.name}</p>
                           <p className="text-xs text-muted-foreground">
@@ -493,7 +597,7 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
                           </p>
                         </div>
                       </div>
-                      {!folder.isDefault && !clientId && (
+                      {!folder.isDefault && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -501,9 +605,10 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
                             e.stopPropagation()
                             deleteFolder(folder.id, folder.isDefault)
                           }}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Excluir pasta"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       )}
                     </div>
@@ -806,6 +911,20 @@ export default function DocumentManager({ clientId }: DocumentManagerProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DocumentPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => {
+          setIsPreviewModalOpen(false)
+          setSelectedDocumentId(null)
+        }}
+        documentId={selectedDocumentId}
+        onDelete={() => {
+          setIsPreviewModalOpen(false)
+          setSelectedDocumentId(null)
+          fetchFolders()
+        }}
+      />
     </div>
   )
 }
